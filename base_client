@@ -1,0 +1,25 @@
+#!/usr/bin/env python3    
+import socket, sys
+
+try:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+except socket.error:
+    sys.stderr.write("[ERROR] %s\n" % "can't create a socket object")
+    sys.exit(1)
+
+try:
+    Host = socket.gethostbyname(socket.gethostname())
+    sock.connect((Host, 10001))
+except socket.error:
+    sys.stderr.write("[ERROR] %s\n" % "can't connect to server")
+    exit(1)
+
+while True:
+    data = input("> ")
+    if data.strip() == "":
+        break
+    else:
+        sock.send(data.encode())
+        print (sock.recv(1024))
+
+sock.close()
