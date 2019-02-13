@@ -2,22 +2,35 @@
 import socketserver
 from time import ctime
 import socket
-
 # First, you must create a request handler class by subclassing the BaseRequestHandler class 
 # and overriding its handle() method
 class MyRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         print('connect form ', self.client_address)
+        '''
         while True: 
             data = self.request.recv(1024).strip().decode()
             if data:
                 print(data)
                 self.request.sendall(('[%s] %s' % (ctime(), data)).encode())
-    
+            else:
+                break
+        '''
+        while True:
+            data = self.request.recv(1024).strip()
+            if not data:  # If client disconnect data will be None
+                break
+            else:
+                print("client say:", data)
+                self.request.sendall(('[%s] %s' % (ctime(), data)).encode())
+            
+        #self.request.close()
     def finish(self):
         print('A user diconnect.')
 
 class ThreadingTCPSserver(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    daemon_threads = True
+    allow_reuse_address = True
     pass
 
 
