@@ -1,6 +1,8 @@
 #!/usr/bin/env python3    
-import socket, sys
-
+import socket
+import sys
+import getch # detect if client press '5', need to install this package
+'''
 try:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 except socket.error:
@@ -13,13 +15,26 @@ try:
 except socket.error:
     sys.stderr.write("[ERROR] %s\n" % "can't connect to server")
     exit(1)
+'''
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+    Host = socket.gethostbyname(socket.gethostname())
+    sock.connect((Host, 10001))
+    print("wait for server...")
+    print(sock.recv(1024).decode())
+    while True:
+        key = getch.getch()
+        if key == '5':
+            print("success!")
+            break
+        else:
+            print("pleas press '5'")
 
-while True:
-    data = input("> ")
-    if data.strip() == "":
-        break
-    else:
-        sock.send(data.encode())
-        print (sock.recv(1024))
+    while True:
+        data = input("> ")
+        if data.strip() == "":
+            break
+        else:
+            sock.send(data.encode())
+            print (sock.recv(1024).decode())
 
-sock.close()
+    sock.close()
