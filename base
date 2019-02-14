@@ -2,47 +2,50 @@
 import socketserver
 from time import ctime
 import socket
-# First, you must create a request handler class by subclassing the BaseRequestHandler class 
-# and overriding its handle() method
+import sys
+from termios import tcflush, TCIFLUSH
+
+current_client = []
+max_client_count = 3
+
 class MyRequestHandler(socketserver.BaseRequestHandler):
+    def setup(self):
+        global current_client
+        current_client.append(self.request)
+        print('a user connect, IP:',self.client_address)
+        if len(current_client) >= max_client_count:
+            tcflush(sys.stdin, TCIFLUSH)
+            signal = input("All users are connected. Wait forsignal (type any key and \"enter\" or \"enter\" only): ")
+            message = "press 5 to continue"
+            for s in current_client:
+                s.sendall(bytes(message,"utf-8"))
+            
+            current_client.clear()
+        
     def handle(self):
-        print('connect form ', self.client_address)
-        '''
-        while True: 
-            data = self.request.recv(1024).strip().decode()
-            if data:
-                print(data)
-                self.request.sendall(('[%s] %s' % (ctime(), data)).encode())
-            else:
-                break
-        '''
+        # print('connect from ', self.client_address)
         while True:
-            data = self.request.recv(1024).strip()
+            data = self.request.recv(1024).strip().decode()
             if not data:  # If client disconnect data will be None
                 break
             else:
                 print("client say:", data)
                 self.request.sendall(('[%s] %s' % (ctime(), data)).encode())
-            
-        #self.request.close()
+        self.request.close()
     def finish(self):
         print('A user diconnect.')
 
 class ThreadingTCPSserver(socketserver.ThreadingMixIn, socketserver.TCPServer):
-    daemon_threads = True
-    allow_reuse_address = True
+    daemon_threads = True        # kill all of the thread when get any exceptions
+    allow_reuse_address = True   # avoid some error when reboot the server
     pass
 
-
-# with socketserver.TCPServer((HOST, PORT), MyTCPHandler) as server:
 if __name__ == "__main__":
     # HOST, PORT = '127.0.0.1', 10001
-    HOST = socket.gethostbyname(socket.gethostname())
+    HOST = socket.gethostbyname(socket.gethostname())   # check current IP address
     PORT = 10001
     ADDRESS = (HOST,PORT)
     try:
-        # Second, you must instantiate one of the server classes, 
-        # passing it the server’s address and the request handler class.
         with ThreadingTCPSserver(ADDRESS,MyRequestHandler) as server:
             print('waiting for connection')
             server.serve_forever()
