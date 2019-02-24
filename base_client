@@ -2,20 +2,11 @@
 import socket
 import sys
 import getch # detect if client press '5', need to install this package
-'''
-try:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-except socket.error:
-    sys.stderr.write("[ERROR] %s\n" % "can't create a socket object")
-    sys.exit(1)
+import json
 
-try:
-    Host = socket.gethostbyname(socket.gethostname())
-    sock.connect((Host, 10001))
-except socket.error:
-    sys.stderr.write("[ERROR] %s\n" % "can't connect to server")
-    exit(1)
-'''
+msg = [{'src':"yeeeeeeee",'dst':"hahahaha"}]
+jmsg = json.dumps(msg)
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     Host = socket.gethostbyname(socket.gethostname())
     sock.connect((Host, 10001))
@@ -28,13 +19,23 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             break
         else:
             print("pleas press '5'")
-
+        
+    sock.send('5'.encode())
+    
     while True:
+        sock.recv(1024).decode()  # receive the 'START' from server
+        
         data = input("> ")
         if data.strip() == "":
             break
         else:
             sock.send(data.encode())
             print (sock.recv(1024).decode())
+        '''
+        else:
+            sock.sendall(jmsg.encode())
+            print (sock.recv(1024).decode())
+        '''
+        sock.send('Finish one trail'.encode())
 
     sock.close()
