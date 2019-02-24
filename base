@@ -4,26 +4,53 @@ from time import ctime
 import socket
 import sys
 from termios import tcflush, TCIFLUSH
+import threading
+import json
 
 current_client = []
-max_client_count = 3
+max_client_count = 3 
+allclient_connect = 0
+allclient_press5 = 0
 
 class MyRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
-        global current_client
+        global current_client, allclient_connect, allclient_press5
         current_client.append(self.request)
         print('a user connect, IP:',self.client_address)
         if len(current_client) >= max_client_count:
-            tcflush(sys.stdin, TCIFLUSH)
-            signal = input("All users are connected. Wait forsignal (type any key and \"enter\" or \"enter\" only): ")
+            tcflush(sys.stdin, TCIFLUSH)  # clean the input queue, try to avoid type 'enter' beforehead
+            signal = input("All users are connected. Wait for signal (type any key and \"enter\" or \"enter\" only): ")
             message = "press 5 to continue"
             for s in current_client:
                 s.sendall(bytes(message,"utf-8"))
-            
+            print("wait for clients to answer...")
             current_client.clear()
+            allclient_connect = 1
+
+        while True:
+            if allclient_connect == 1:
+                break
+
+        client_press_5 = self.request.recv(1024).strip().decode()
+        current_client.append(self.request)
+
+        if len(current_client) >= max_client_count:
+            tcflush(sys.stdin, TCIFLUSH)  # clean the input queue, try to avoid type 'enter' beforehead
+            message = "Start the game!"
+            for s in current_client:
+                s.sendall(bytes(message,"utf-8"))
+            current_client.clear()
+            allclient_press5 = 1
         
+        while True:
+            if allclient_press5 == 1:
+                break
+            
+         
     def handle(self):
         # print('connect from ', self.client_address)
+        # cur_trd = threading.current_thread()
+        print("Server request info:",self.request)        
         while True:
             data = self.request.recv(1024).strip().decode()
             if not data:  # If client disconnect data will be None
@@ -31,6 +58,18 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             else:
                 print("client say:", data)
                 self.request.sendall(('[%s] %s' % (ctime(), data)).encode())
+        '''
+        while True:
+            data = self.request.recv(1024)
+            if not data:
+                break
+            else:
+                jdata = json.loads(data)
+                print(type(data))
+                print(type(jdata))
+                print("jdata:",jdata[0])
+                self.request.sendall(('[%s]' % ctime()).encode())
+        '''
         self.request.close()
     def finish(self):
         print('A user diconnect.')
