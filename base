@@ -12,6 +12,8 @@ max_client_count = 3
 allclient_connect = 0
 allclient_press5 = 0
 
+finish_client = 0
+
 class MyRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
         global current_client, allclient_connect, allclient_press5
@@ -48,9 +50,11 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             
          
     def handle(self):
+        global finish_client
         # print('connect from ', self.client_address)
         # cur_trd = threading.current_thread()
         print("Server request info:",self.request)        
+        
         while True:
             data = self.request.recv(1024).strip().decode()
             if not data:  # If client disconnect data will be None
@@ -58,6 +62,22 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             else:
                 print("client say:", data)
                 self.request.sendall(('[%s] %s' % (ctime(), data)).encode())
+                client_finish = self.request.recv(1024).strip().decode()
+                print("after client finish:", client_finish)
+                current_client.append(self.request)
+                finish_client += 1
+
+            if len(current_client) >= max_client_count:
+                #print("GG???")
+                for s in current_client:
+                    s.sendall("can go to next trail!".encode())
+                current_client.clear()
+                finish_client = 0
+
+            while True:
+                if finish_client == 0:
+                    break
+
         '''
         while True:
             data = self.request.recv(1024)

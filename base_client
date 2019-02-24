@@ -7,20 +7,6 @@ import json
 msg = [{'src':"yeeeeeeee",'dst':"hahahaha"}]
 jmsg = json.dumps(msg)
 
-'''
-try:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-except socket.error:
-    sys.stderr.write("[ERROR] %s\n" % "can't create a socket object")
-    sys.exit(1)
-
-try:
-    Host = socket.gethostbyname(socket.gethostname())
-    sock.connect((Host, 10001))
-except socket.error:
-    sys.stderr.write("[ERROR] %s\n" % "can't connect to server")
-    exit(1)
-'''
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     Host = socket.gethostbyname(socket.gethostname())
     sock.connect((Host, 10001))
@@ -42,6 +28,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             break
         else:
             sock.send(data.encode())
+            print (sock.recv(1024).decode())
+            sock.send("finish one transit".encode())
             print (sock.recv(1024).decode())
         '''
         else:
