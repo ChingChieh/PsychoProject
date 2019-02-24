@@ -10,7 +10,16 @@ import time
 class MainWindow(QMainWindow, Ui_MainWindow):
   def __init__(self, parent=None):
     super(MainWindow, self).__init__(parent)
+
+    QtWidgets.QFrame.__init__(self, parent)
+    screen = QtWidgets.QDesktopWidget().screenGeometry()
     self.setupUi(self)
+    self.showFullScreen()
+
+  def keyPressEvent(self, event):
+    key = event.key()
+    if key == QtCore.Qt.Key_Escape:
+      self.showNormal()
 
 def ui_setup():
   app = QApplication(sys.argv)
@@ -45,7 +54,6 @@ def main():
       ]
   for l in src:
     set_src(app, window, 1, l)
-    time.sleep(2)
   sys.exit(app.exec_())
 
 if __name__ == "__main__":
