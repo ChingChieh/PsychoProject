@@ -1,14 +1,17 @@
 #!/usr/bin/env python3    
 import socket
+import select
 import sys
 import getch # detect if client press '5', need to install this package
 import json
 
 msg = [{'src':"yeeeeeeee",'dst':"hahahaha"}]
 jmsg = json.dumps(msg)
+TimeOut = 10
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     Host = socket.gethostbyname(socket.gethostname())
+    print("Host:",Host)
     sock.connect((Host, 10001))
     print("wait for server...")
     print(sock.recv(1024).decode())
@@ -23,7 +26,18 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             print("pleas press '5'")
     
     while True:
-        data = input("> ")
+        print("> ", end='', flush=True)    
+        i, o, e = select.select( [sys.stdin], [], [], TimeOut )
+        if i:
+            data = sys.stdin.readline().strip()
+            sock.send(data.encode())
+            print (sock.recv(1024).decode())
+            sock.send("finish one transit".encode())
+            print (sock.recv(1024).decode())
+        else:
+            print("You miss one trail!")
+            break
+        '''
         if data.strip() == "":
             break
         else:
@@ -31,6 +45,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             print (sock.recv(1024).decode())
             sock.send("finish one transit".encode())
             print (sock.recv(1024).decode())
+        '''
         '''
         else:
             sock.sendall(jmsg.encode())
