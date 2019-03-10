@@ -30,13 +30,20 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         i, o, e = select.select( [sys.stdin], [], [], TimeOut )
         if i:
             data = sys.stdin.readline().strip()
+            if data == "":
+                break
             sock.send(data.encode())
             print (sock.recv(1024).decode())
             sock.send("finish one transit".encode())
             print (sock.recv(1024).decode())
         else:
-            print("You miss one trail!")
-            break
+            print("\nYou miss one trail!")
+            data = "One client miss a trail!"
+            sock.send(data.encode())
+            print(sock.recv(1024).decode())
+            sock.send("all clients jump to the next trail".encode())
+            print(sock.recv(1024).decode())
+
         '''
         if data.strip() == "":
             break
