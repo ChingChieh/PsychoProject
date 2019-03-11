@@ -1,14 +1,17 @@
 #!/usr/bin/env python3    
 import socket
+import select
 import sys
 import getch # detect if client press '5', need to install this package
 import json
 
 msg = [{'src':"yeeeeeeee",'dst':"hahahaha"}]
 jmsg = json.dumps(msg)
+TimeOut = 10
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     Host = socket.gethostbyname(socket.gethostname())
+    print("Host:",Host)
     sock.connect((Host, 10001))
     print("wait for server...")
     print(sock.recv(1024).decode())
@@ -23,7 +26,25 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             print("pleas press '5'")
     
     while True:
-        data = input("> ")
+        print("> ", end='', flush=True)    
+        i, o, e = select.select( [sys.stdin], [], [], TimeOut )
+        if i:
+            data = sys.stdin.readline().strip()
+            if data == "":
+                break
+            sock.send(data.encode())
+            print (sock.recv(1024).decode())
+            sock.send("finish one transit".encode())
+            print (sock.recv(1024).decode())
+        else:
+            print("\nYou miss one trail!")
+            data = "One client miss a trail!"
+            sock.send(data.encode())
+            print(sock.recv(1024).decode())
+            sock.send("all clients jump to the next trail".encode())
+            print(sock.recv(1024).decode())
+
+        '''
         if data.strip() == "":
             break
         else:
@@ -31,6 +52,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             print (sock.recv(1024).decode())
             sock.send("finish one transit".encode())
             print (sock.recv(1024).decode())
+        '''
         '''
         else:
             sock.sendall(jmsg.encode())
