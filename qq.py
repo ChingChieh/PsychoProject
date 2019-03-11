@@ -15,14 +15,24 @@ class MainWindow(QMainWindow):
     #QtWidgets.QFrame.__init__(self, parent)
     #screen = QtWidgets.QDesktopWidget().screenGeometry()
     #self.setupUi(self)
-    self.showFullScreen()
     self.dialogs = list()
+    self.start()
+    #self.showFullScreen()
+    self.showMaximized()
+    self.show()
+
+  def start(self):
+    self.view = Ui_play()
+    self.view.setupUi(self)
+    self.dialogs.append(self.view)
+    self.showMaximized()
 
   def stop(self):
-    dialog = Ui_stop()
-    dialog.setupUi(self)
-    self.dialogs.append(dialog)
-    self.show()
+    self.stop_view = Ui_stop()
+    self.stop_view.setupUi(self)
+    self.showMaximized()
+    #self.show()
+    self.dialogs.append(self.stop_view)
 
   def keyPressEvent(self, event):
     key = event.key()
@@ -33,10 +43,7 @@ def ui_setup():
   app = QApplication(sys.argv)
   window = MainWindow()
   window.show()
-  view = Ui_play()
-  view.setupUi(window)
-  view.src_1.setText("2")
-  return app, window, view
+  return app, window, window.view
 
 def set_id(app, window, my_id):
   # my_id : string
@@ -58,19 +65,20 @@ def set_src(app, window, my_id, src_list):
 def main():
   app, window, view = ui_setup()
   src = [
-      ["7", "5" ,"4"],
+      ["7", "1" ,"4"],
       ["5", "5" ,"1"],
-      ["7", "5" ,"4"],
+      ["7", "6" ,"4"],
       ["5", "5" ,"1"],
-      ["7", "5" ,"4"],
+      ["7", "7" ,"4"],
       ["5", "5" ,"1"],
       ["1", "2" ,"3"]
       ]
   for l in src:
-    time.sleep(1)
     set_src(app, view, 1, l)
   window.stop()
-  sys.exit(app.exec_())
+  window.start()
+  #sys.exit(app.exec_())
+  app.exec_()
 
 if __name__ == "__main__":
   main()
