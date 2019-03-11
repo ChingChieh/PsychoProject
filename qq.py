@@ -1,21 +1,28 @@
 #!/usr/bin/python
-from ui import Ui_MainWindow as Ui_play
 from stop_point import Ui_MainWindow as Ui_stop
+from ui import Ui_MainWindow as Ui_play
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5 import *
-import sys
 import time
+import sys
 
-class MainWindow(QMainWindow, Ui_play):
+class MainWindow(QMainWindow):
   def __init__(self, parent=None):
     super(MainWindow, self).__init__(parent)
 
     #QtWidgets.QFrame.__init__(self, parent)
     #screen = QtWidgets.QDesktopWidget().screenGeometry()
-    self.setupUi(self)
+    #self.setupUi(self)
     self.showFullScreen()
+    self.dialogs = list()
+
+  def stop(self):
+    dialog = Ui_stop()
+    dialog.setupUi(self)
+    self.dialogs.append(dialog)
+    self.show()
 
   def keyPressEvent(self, event):
     key = event.key()
@@ -25,9 +32,11 @@ class MainWindow(QMainWindow, Ui_play):
 def ui_setup():
   app = QApplication(sys.argv)
   window = MainWindow()
-  window.src_1.setText("2")
   window.show()
-  return app, window
+  view = Ui_play()
+  view.setupUi(window)
+  view.src_1.setText("2")
+  return app, window, view
 
 def set_id(app, window, my_id):
   # my_id : string
@@ -47,14 +56,20 @@ def set_src(app, window, my_id, src_list):
   QApplication.processEvents()
 
 def main():
-  app, window = ui_setup()
+  app, window, view = ui_setup()
   src = [
+      ["7", "5" ,"4"],
+      ["5", "5" ,"1"],
+      ["7", "5" ,"4"],
+      ["5", "5" ,"1"],
       ["7", "5" ,"4"],
       ["5", "5" ,"1"],
       ["1", "2" ,"3"]
       ]
   for l in src:
-    set_src(app, window, 1, l)
+    time.sleep(1)
+    set_src(app, view, 1, l)
+  window.stop()
   sys.exit(app.exec_())
 
 if __name__ == "__main__":

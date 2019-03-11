@@ -247,5 +247,3 @@ class Ui_MainWindow(object):
         self.pos_2.setText(_translate("MainWindow", "ID : 2"))
         self.src_3.setText(_translate("MainWindow", "0"))
         self.pos_3.setText(_translate("MainWindow", "ID : 3"))
-
-
