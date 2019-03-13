@@ -48,19 +48,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.send("all clients jump to the next trail".encode())
             print(sock.recv(1024).decode())
 
-        '''
-        if data.strip() == "":
-            break
-        else:
-            sock.send(data.encode())
-            print (sock.recv(1024).decode())
-            sock.send("finish one transit".encode())
-            print (sock.recv(1024).decode())
-        '''
-        '''
-        else:
-            sock.sendall(jmsg.encode())
-            print (sock.recv(1024).decode())
-        '''
-
     sock.close()
