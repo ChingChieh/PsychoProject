@@ -25,7 +25,7 @@
    </property>
    <property name="maximumSize">
     <size>
-     <width>900</width>
+     <width>16777215</width>
      <height>16777215</height>
     </size>
    </property>
@@ -34,7 +34,7 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_5">
     <property name="sizeConstraint">
-     <enum>QLayout::SetMaximumSize</enum>
+     <enum>QLayout::SetDefaultConstraint</enum>
     </property>
     <property name="leftMargin">
      <number>0</number>
@@ -69,7 +69,7 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,0,2,0,2,0,1">
            <property name="sizeConstraint">
-            <enum>QLayout::SetMaximumSize</enum>
+            <enum>QLayout::SetDefaultConstraint</enum>
            </property>
            <item>
             <spacer name="horizontalSpacer_9">
@@ -85,7 +85,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="src_4">
+            <widget class="QLabel" name="alloc_1">
              <property name="font">
               <font>
                <pointsize>40</pointsize>
@@ -118,7 +118,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="src_6">
+            <widget class="QLabel" name="alloc_2">
              <property name="font">
               <font>
                <pointsize>40</pointsize>
@@ -151,7 +151,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="src_5">
+            <widget class="QLabel" name="alloc_3">
              <property name="font">
               <font>
                <pointsize>40</pointsize>
@@ -224,7 +224,7 @@
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,1,2,1,1">
              <property name="sizeConstraint">
-              <enum>QLayout::SetMaximumSize</enum>
+              <enum>QLayout::SetDefaultConstraint</enum>
              </property>
              <item>
               <spacer name="verticalSpacer_2">
@@ -596,7 +596,7 @@
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,1,2,1,1">
              <property name="sizeConstraint">
-              <enum>QLayout::SetMinAndMaxSize</enum>
+              <enum>QLayout::SetDefaultConstraint</enum>
              </property>
              <item>
               <spacer name="verticalSpacer_11">
@@ -757,7 +757,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>
