@@ -47,21 +47,23 @@ class MainWindow(QMainWindow):
     self.start_view.alloc_1.setText("")
     self.start_view.alloc_3.setText("")
     self.start_view.alloc_2.setText("")
-    #self.setCentralWidget(self.start_view.centralwidget)
     self.QtStack.setCurrentIndex(0)
 
   def set_stop_view(self):
     self.mode = self.mode_dic['stop']
     self.stop_view.label.setText("+")
     self.QtStack.setCurrentIndex(1)
-    #self.setCentralWidget(self.stop_view.centralwidget)
+
+  def set_wait_view(self):
+    self.mode = self.mode_dic['wait']
+    self.stop_view.label.setText("Wait")
+    self.QtStack.setCurrentIndex(1)
 
   def set_alloc_view(self):
     self.mode = self.mode_dic['alloc']
     self.start_view.alloc_1.setText("5")
     self.start_view.alloc_2.setText("1")
     self.start_view.alloc_3.setText("5")
-    #self.setCentralWidget(self.start_view.centralwidget)
     self.QtStack.setCurrentIndex(0)
 
   def keyPressEvent(self, event):
