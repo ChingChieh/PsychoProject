@@ -1,0 +1,3 @@
+目前問題是client每一次新的trail都會直接傳一個開始的signal給server,
+而server會在每次trail結束時接收一次signal但因為client進度不一樣，
+導致client開始的singal被server誤以為是結束的signal...

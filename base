@@ -8,7 +8,7 @@ import threading
 import json
 
 current_client = []
-max_client_count = 3 
+max_client_count = 1
 allclient_connect = 0
 allclient_press5 = 0
 
@@ -19,7 +19,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
         global current_client, allclient_connect, allclient_press5
         current_client.append(self.request)
         print('a user connect, IP:',self.client_address)
-        if len(current_client) >= max_client_count:
+        if len(current_client) >= max_client_count: # only one client will enter this IF condition
             tcflush(sys.stdin, TCIFLUSH)  # clean the input queue, try to avoid type 'enter' beforehead
             signal = input("All users are connected. Wait for signal (type any key and \"enter\" or \"enter\" only): ")
             message = "press 5 to continue"
@@ -29,7 +29,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             current_client.clear()
             allclient_connect = 1
 
-        while True:
+        while True: # Some client need to wait here for other clients connect to server
             if allclient_connect == 1:
                 break
 
@@ -56,6 +56,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
         print("Server request info:",self.request)        
         
         while True:
+            data = None;
             data = self.request.recv(1024).strip().decode()
             if not data:  # If client disconnect data will be None
                 break
@@ -68,7 +69,6 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 finish_client += 1
 
             if len(current_client) >= max_client_count:
-                #print("GG???")
                 for s in current_client:
                     s.sendall("can go to next trail!".encode())
                 current_client.clear()

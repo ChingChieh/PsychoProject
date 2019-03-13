@@ -4,6 +4,7 @@ import select
 import sys
 import getch # detect if client press '5', need to install this package
 import json
+import time
 
 msg = [{'src':"yeeeeeeee",'dst':"hahahaha"}]
 jmsg = json.dumps(msg)
@@ -26,9 +27,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             print("pleas press '5'")
     
     while True:
-        print("> ", end='', flush=True)    
+        print("> ", end='', flush=True)   
+        inputStart = time.time()
         i, o, e = select.select( [sys.stdin], [], [], TimeOut )
         if i:
+            inputEnd = time.time()
+            print("you spend ", inputEnd - inputStart, " second on input")
             data = sys.stdin.readline().strip()
             if data == "":
                 break
