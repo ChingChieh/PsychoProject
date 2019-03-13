@@ -30,6 +30,7 @@ class MainWindow(QMainWindow):
     self.show()
     self.ConnectToServer(5)
     self.my_id = int(self.recv_data)
+    self.set_id(self.my_id)
 
   def ConnectToServer(self, data):
     self.sock.send(str(data).encode())
@@ -87,18 +88,18 @@ class MainWindow(QMainWindow):
       #self.timer.start(5000)
       #self.set_alloc_view()
     elif self.mode == self.mode_dic['start']:
-      if key == QtCore.Qt.Key_1:
+      if key == QtCore.Qt.Key_2:
         select_id = self.my_id%3 + 1
-      elif key == QtCore.Qt.Key_2:
+      elif key == QtCore.Qt.Key_1:
         select_id =  3 if self.my_id-1 == 0 else self.my_id-1
-      ConnectToServer(select_id)
+      self.ConnectToServer(select_id)
       print(select_id)
     elif self.mode == self.mode_dic['alloc'] and key == QtCore.Qt.Key_1:
       self.alloc_src(self.my_id, self.other_id, -1)
     elif self.mode == self.mode_dic['alloc'] and key == QtCore.Qt.Key_2:
       self.alloc_src(self.my_id, self.other_id, 1)
 
-  def set_id(my_id):
+  def set_id(self, my_id):
     # my_id : string
     id = [1, 2 ,3]
     my_id -= 1

@@ -11,7 +11,7 @@ lock = threading.Lock()
 ID_CLIENT = []
 ID_list = []
 current_client = []
-max_client_count = 3 
+max_client_count = 1
 allclient_connect = 0
 allclient_press5 = 0
 
@@ -53,18 +53,18 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 s.sendall(bytes(i,"utf-8"))
             current_client.clear()
             allclient_press5 = 1
-        
+
         while True:
             if allclient_press5 == 1:
                 break
-            
-         
+
+
     def handle(self):
         global finish_client
         # print('connect from ', self.client_address)
         # cur_trd = threading.current_thread()
-        print("Server request info:",self.request)        
-        
+        print("Server request info:",self.request)
+
         while True:
             data = None;
             data = self.request.recv(1024).strip().decode()
