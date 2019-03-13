@@ -7,8 +7,11 @@ from termios import tcflush, TCIFLUSH
 import threading
 import json
 
+lock = threading.Lock()
+ID_CLIENT = []
+ID_list = []
 current_client = []
-max_client_count = 1
+max_client_count = 3 
 allclient_connect = 0
 allclient_press5 = 0
 
@@ -16,16 +19,23 @@ finish_client = 0
 
 class MyRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
-        global current_client, allclient_connect, allclient_press5
+        global current_client, allclient_connect, allclient_press5, lock, ID_CLIENT
+        thread_id = threading.currentThread().getName().split("-")[1]
+        lock.acquire()
+        ID_list.append(thread_id)
         current_client.append(self.request)
+        lock.release()
         print('a user connect, IP:',self.client_address)
+        print("This thread id",thread_id)
         if len(current_client) >= max_client_count: # only one client will enter this IF condition
             tcflush(sys.stdin, TCIFLUSH)  # clean the input queue, try to avoid type 'enter' beforehead
+            print(ID_list,current_client)
             signal = input("All users are connected. Wait for signal (type any key and \"enter\" or \"enter\" only): ")
             message = "press 5 to continue"
             for s in current_client:
                 s.sendall(bytes(message,"utf-8"))
             print("wait for clients to answer...")
+            ID_CLIENT = current_client.copy()
             current_client.clear()
             allclient_connect = 1
 
@@ -39,8 +49,8 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
         if len(current_client) >= max_client_count:
             tcflush(sys.stdin, TCIFLUSH)  # clean the input queue, try to avoid type 'enter' beforehead
             message = "Start the game!"
-            for s in current_client:
-                s.sendall(bytes(message,"utf-8"))
+            for s,i in zip(ID_CLIENT,ID_list):
+                s.sendall(bytes(i,"utf-8"))
             current_client.clear()
             allclient_press5 = 1
         
