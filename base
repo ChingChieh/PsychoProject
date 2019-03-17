@@ -6,6 +6,8 @@ import sys
 from termios import tcflush, TCIFLUSH
 import threading
 import json
+import pandas as pd
+
 
 lock = threading.Lock()
 ID_CLIENT = []
@@ -110,6 +112,11 @@ class ThreadingTCPSserver(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 if __name__ == "__main__":
+    df = pd.read_excel("dic.xlsx")
+    df.drop(df.columns[6:],axis = 1, inplace=True)
+    df.columns = df.iloc[0]
+    df.drop([0],axis = 0, inplace=True)
+    print(df.head());
     # HOST, PORT = '127.0.0.1', 10001
     HOST = socket.gethostbyname(socket.gethostname())   # check current IP address
     PORT = 10001
