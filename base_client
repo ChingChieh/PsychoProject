@@ -18,7 +18,7 @@ class MainWindow(QMainWindow):
     self.mode_dic = {'init': 1, 'start':2, 'stop':3, 'alloc':4, 'wait':5}
     self.mode = 1
     self.my_id = 0
-    self.other_id = 0
+    self.other_id = 3
     self.recv_data = 0
     self.sock = sock
     self.timer_stop = QTimer(self)
@@ -35,6 +35,7 @@ class MainWindow(QMainWindow):
   def ConnectToServer(self, data):
     self.sock.send(str(data).encode())
     self.recv_data = self.sock.recv(1024).decode()
+    print("receive data :" + self.recv_data)
 
   def Ui_setup(self):
     try:
@@ -80,12 +81,13 @@ class MainWindow(QMainWindow):
     self.QtStack.setCurrentIndex(0)
 
   def keyPressEvent(self, event):
+    assert(self.my_id != self.other_id), "my id is the same to other id. "
     key = event.key()
     if key == QtCore.Qt.Key_Escape:
       self.showNormal()
     elif self.mode == self.mode_dic['init'] and key == QtCore.Qt.Key_5:
       self.set_start_view()
-      self.set_timer(5)
+    #  self.set_timer(5)
       self.set_alloc_view()
     elif self.mode == self.mode_dic['start']:
       select_id = 0
@@ -118,15 +120,21 @@ class MainWindow(QMainWindow):
     QApplication.processEvents()
 
   def alloc_src(self, my_id, other_id, add_minus):
-    my_src = int(self.start_view.alloc_3.text())
-    self.start_view.alloc_3.setText(str(my_src+add_minus))
+    my_src = int(self.start_view.alloc_2.text())
+    if my_src == 0 and add_minus == -1:
+      return
     if my_id%3+1 == other_id:
-      other_src = int(self.start_view.alloc_2.text())
-      self.start_view.alloc_2.setText(str(my_src-add_minus))
+      other_src = int(self.start_view.alloc_3.text())
+      if other_src == 0 and add_minus == 1:
+        return
+      self.start_view.alloc_3.setText(str(other_src-add_minus))
     else:
       other_src = int(self.start_view.alloc_1.text())
-      self.start_view.alloc_3.setText(str(my_src-add_minus))
+      if other_src == 0 and add_minus == 1:
+        return
+      self.start_view.alloc_1.setText(str(other_src-add_minus))
 
+    self.start_view.alloc_2.setText(str(my_src+add_minus))
     self.setCentralWidget(self.start_view.centralwidget)
 
   def set_timer(self, stop_time):
@@ -138,7 +146,7 @@ def ui_setup(sock):
   app = QApplication(sys.argv)
   window = MainWindow(sock)
   window.show()
-  app.exec_()
+  sys.exit(app.exec_())
   return app, window
 
 def get_src(window):
