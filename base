@@ -8,7 +8,7 @@ import threading
 import json
 import pandas as pd
 
-
+'''
 lock = threading.Lock()
 ID_CLIENT = []
 ID_list = []
@@ -16,12 +16,12 @@ current_client = []
 max_client_count = 1
 allclient_connect = 0
 allclient_press5 = 0
-
 finish_client = 0
-
+'''
 class MyRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
-        global current_client, allclient_connect, allclient_press5, lock, ID_CLIENT
+        #print(df.head())
+        global current_client, allclient_connect, allclient_press5, lock, ID_CLIENT, trail
         thread_id = threading.currentThread().getName().split("-")[1]
         lock.acquire()
         ID_list.append(thread_id)
@@ -53,8 +53,12 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             message = "Start the game!"
             for s,i in zip(ID_CLIENT,ID_list):
                 s.sendall(bytes(i,"utf-8"))
+            for s in ID_CLIENT:
+                sourceList = list(df.loc[trail, ['PlayerA', 'PlayerB','PlayerC']])
+                s.sendall(bytes(str(sourceList),"utf-8"))
             current_client.clear()
             allclient_press5 = 1
+            trail += 1
 
         while True:
             if allclient_press5 == 1:
@@ -111,12 +115,31 @@ class ThreadingTCPSserver(socketserver.ThreadingMixIn, socketserver.TCPServer):
     allow_reuse_address = True   # avoid some error when reboot the server
     pass
 
-if __name__ == "__main__":
+def getData():
     df = pd.read_excel("dic.xlsx")
     df.drop(df.columns[6:],axis = 1, inplace=True)
     df.columns = df.iloc[0]
     df.drop([0],axis = 0, inplace=True)
+    return df
+
+if __name__ == "__main__":
+    lock = threading.Lock()
+    
+    ID_list = []
+    ID_CLIENT = []
+    current_client = []
+   
+    trail = 1
+    finish_client = 0
+    allclient_press5 = 0
+    max_client_count = 3
+    allclient_connect = 0
+   
+
+
+    df = getData();
     print(df.head());
+
     # HOST, PORT = '127.0.0.1', 10001
     HOST = socket.gethostbyname(socket.gethostname())   # check current IP address
     PORT = 10001
