@@ -6,6 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5 import *
 from ast import literal_eval
+import random
 import socket
 import select
 import getch # detect if client press '5', need to install this package
@@ -22,14 +23,23 @@ class MainWindow(QMainWindow):
     self.other_id = 3
     self.recv_data = 0
     self.sock = sock
+#### time
+    self.start_t = 0
+    self.end_t = 0
     self.timer_stop = QTimer(self)
     self.timer_stop.timeout.connect(self.set_stop_view)
+    self.timer_alloc = QTimer(self)
+    self.timer_alloc.timeout.connect(self.set_alloc_view)
+    self.timer_result = QTimer(self)
+    self.timer_result.timeout.connect(self.set_result_view)
+#### UI
     self.QtStack = QtWidgets.QStackedLayout()
     self.screen = QDesktopWidget().screenGeometry ()
     self.showFullScreen()
     self.Ui_setup()
     self.ConnectToServer(5)
     self.my_id = int(self.recv_data)
+    self.left, self.right = self.get_id(self.my_id)
     self.set_id(self.my_id)
 
   def ConnectToServer(self, data):
@@ -58,16 +68,19 @@ class MainWindow(QMainWindow):
 
   def set_start_view(self):
     self.recv_data = self.sock.recv(1024).decode()
-    #self.recv_data = "[5,5,1]"
     src_list = str_to_list(self.recv_data)
     self.set_src(self.my_id, src_list)
     self.mode = self.mode_dic['start']
-    self.start_view.alloc_1.setText("")
-    self.start_view.alloc_3.setText("")
-    self.start_view.alloc_2.setText("")
+    self.mask_alloc()
     self.QtStack.setCurrentIndex(0)
 
   def set_stop_view(self):
+    if self.mode == self.mode_dic['alloc']:
+      alloc_result = [0,0,0]
+      alloc_result[self.my_id-1] = my_result
+      alloc_result[self.other_id-1] = other_result
+      print(alloc_result)
+      self.ConnectToServer(alloc_result)
     self.mode = self.mode_dic['stop']
     self.stop_view.label.setText("+")
     self.QtStack.setCurrentIndex(1)
@@ -79,10 +92,29 @@ class MainWindow(QMainWindow):
 
   def set_alloc_view(self):
     self.mode = self.mode_dic['alloc']
-    self.start_view.alloc_1.setText("5")
-    self.start_view.alloc_2.setText("1")
-    self.start_view.alloc_3.setText("5")
+    self.mask_alloc()
+    my_src = random.randint(0,11)
+    self.init_alloc_view(my_src)
+    other_src = 11 - my_src
+    if self.my_id%3+1 == self.other_id:
+      self.start_view.src_3.setText(str(other_src))
+      other_src = int(self.start_view.src_3.text())
+    else:
+      self.start_view.src_1.setText(str(other_src))
+      other_src = int(self.start_view.src_1.text())
+
+    #exec("self.start_view.%s.setText(\"%d\")" % (alloc_name, other_src) )
     self.QtStack.setCurrentIndex(0)
+
+  def set_result_view(self):
+    self.mode = self.mode_dic['wait']
+    re_list = str_to_list(self.recv_data)
+    self.start_view.alloc_1.setText(str(re_list[left_id]))
+    self.start_view.alloc_2.setText(str(re_list[my_id]))
+    self.start_view.alloc_3.setText(str(re_list[right_id]))
+    self.QtStack.setCurrentIndex(0)
+    set_timer(self.timer_stop, 2)
+    set_timer(self.timer_alloc, 4)
 
   def keyPressEvent(self, event):
     assert(self.my_id != self.other_id), "my id is the same to other id. "
@@ -90,10 +122,11 @@ class MainWindow(QMainWindow):
     if key == QtCore.Qt.Key_Escape:
       self.showNormal()
     elif self.mode == self.mode_dic['init'] and key == QtCore.Qt.Key_5:
-      self.set_wait_view()
-      self.set_start_view()
-    #  self.set_timer(5)
-      #self.set_alloc_view()
+
+      self.set_alloc_view()
+     # self.set_wait_view()
+     # self.start_t = time.time()
+     # self.set_start_view()
     elif self.mode == self.mode_dic['start']:
       select_id = 0
       if key == QtCore.Qt.Key_2:
@@ -101,11 +134,16 @@ class MainWindow(QMainWindow):
       elif key == QtCore.Qt.Key_1:
         select_id =  3 if self.my_id-1 == 0 else self.my_id-1
       self.ConnectToServer(select_id)
-      self.mode = self.mode_dic['wait']
+      self.end_t = time.time()
+      self.set_stop_view()
+      self.set_timer(self.timer_result, end_t - start_t)
+      #self.mode = self.mode_dic['stop']
     elif self.mode == self.mode_dic['alloc'] and key == QtCore.Qt.Key_1:
       self.alloc_src(self.my_id, self.other_id, -1)
+      self.set_timer(self.timer_stop, 4)
     elif self.mode == self.mode_dic['alloc'] and key == QtCore.Qt.Key_2:
       self.alloc_src(self.my_id, self.other_id, 1)
+      self.set_timer(self.timer_stop, 4)
 
   def set_id(self, my_id):
     # my_id : int
@@ -125,26 +163,50 @@ class MainWindow(QMainWindow):
     QApplication.processEvents()
 
   def alloc_src(self, my_id, other_id, add_minus):
-    my_src = int(self.start_view.alloc_2.text())
+    global my_result, other_result
+    my_src = int(self.start_view.src_2.text())
     if my_src == 0 and add_minus == -1:
       return
     if my_id%3+1 == other_id:
-      other_src = int(self.start_view.alloc_3.text())
+      print(self.start_view.src_3.text())
+      other_src = int(self.start_view.src_3.text())
       if other_src == 0 and add_minus == 1:
         return
-      self.start_view.alloc_3.setText(str(other_src-add_minus))
+      other_result = other_src - add_minus
+      self.start_view.src_3.setText(str(other_result))
     else:
-      other_src = int(self.start_view.alloc_1.text())
+      other_src = int(self.start_view.src_1.text())
       if other_src == 0 and add_minus == 1:
         return
-      self.start_view.alloc_1.setText(str(other_src-add_minus))
+      other_result = other_src - add_minus
+      self.start_view.src_1.setText(str(other_result))
 
-    self.start_view.alloc_2.setText(str(my_src+add_minus))
+    my_result = my_src + add_minus
+    self.start_view.src_2.setText(str(my_result))
     self.setCentralWidget(self.start_view.centralwidget)
 
-  def set_timer(self, stop_time):
-    self.timer_stop.start(stop_time*1000)
+  def set_timer(self, timer, wait_time):
+    timer.start(round(wait_time * 1000))
 
+  def get_id(self, my_id):
+    my_id -= 1
+    id = [1, 2 ,3]
+    left_id = id[(my_id+2)%3]
+    right_id = id[(my_id+1)%3]
+    return left_id, right_id
+
+  def mask_alloc(self):
+    self.start_view.alloc_1.setText("")
+    self.start_view.alloc_3.setText("")
+    self.start_view.alloc_2.setText("")
+
+
+  def init_alloc_view(self, my_src):
+    self.start_view.src_1.setText("")
+    self.start_view.src_2.setText(str(my_src))
+    self.start_view.src_3.setText("")
+    self.start_view.src_1.setStyleSheet("color : gray;")
+    self.start_view.src_3.setStyleSheet("color : gray;")
 
 #########
 
@@ -165,6 +227,7 @@ def main():
 
   with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     Host = socket.gethostbyname(socket.gethostname())
+    #Host = "10.3.207.113"
     print("Host:",Host)
     sock.connect((Host, 10001))
     print("wait for server...")
