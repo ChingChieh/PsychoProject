@@ -37,7 +37,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
         client_press_5 = self.request.recv(1024).strip().decode()
         current_client.append(self.request)
-        
+
         # In this if, server send ID to all clients and pass the first source list to them
         if len(current_client) >= max_client_count:
             tcflush(sys.stdin, TCIFLUSH)  # clean the input queue, try to avoid type 'enter' beforehead
@@ -60,13 +60,13 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
         global finishSelect_client, after_firstTrail, trail, clientSelection
         # print('connect from ', self.client_address)
         # cur_trd = threading.current_thread()
-        print("Server request info:",self.request) 
+        print("Server request info:",self.request)
         while True:
             if after_firstTrail:
                 sourceList = list(df.loc[trail, ['PlayerA', 'PlayerB','PlayerC']])
                 self.request.send(bytes(str(sourceList),"utf-8"))
-                
-                
+
+
             data = None;
             data = self.request.recv(1024).strip().decode()
             if not data:  # If client disconnect data will be None
@@ -91,8 +91,8 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             while True:
                 if finishSelect_client == 0:
                     break
-                
-                
+
+
 
 
 
@@ -114,7 +114,7 @@ def getData():
 
 if __name__ == "__main__":
     lock = threading.Lock()
-    
+
     ID_list = []
     ID_CLIENT = []
     current_client = []
@@ -125,10 +125,10 @@ if __name__ == "__main__":
     after_firstTrail = 0
     finishSelect_client = 0
     allclient_press5 = 0
-    max_client_count = 3
+    max_client_count = 1
     clientSelection = [0] * max_client_count
     allclient_connect = 0
-   
+
 
 
     df = getData();
