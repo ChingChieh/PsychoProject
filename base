@@ -12,13 +12,13 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
         #print(df.head())
         global current_client, allclient_connect, allclient_press5, lock, ID_CLIENT, trail
-        thread_id = threading.currentThread().getName().split("-")[1]
+        self.thread_id = threading.currentThread().getName().split("-")[1]
         lock.acquire()
-        ID_list.append(thread_id)
+        ID_list.append(self.thread_id)
         current_client.append(self.request)
         lock.release()
         print('a user connect, IP:',self.client_address)
-        print("This thread id",thread_id)
+        print("This thread id",self.thread_id)
         if len(current_client) >= max_client_count: # only one client will enter this IF condition
             tcflush(sys.stdin, TCIFLUSH)  # clean the input queue, try to avoid type 'enter' beforehead
             print(ID_list,current_client)
@@ -49,7 +49,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 s.sendall(bytes(str(sourceList),"utf-8"))
             current_client.clear()
             allclient_press5 = 1
-            trail += 1
+            # trail += 1
 
         while True:
             if allclient_press5 == 1:
@@ -57,11 +57,10 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
 
     def handle(self):
-        global finish_client, after_firstTrail, trail
+        global finishSelect_client, after_firstTrail, trail, clientSelection
         # print('connect from ', self.client_address)
         # cur_trd = threading.current_thread()
-        print("Server request info:",self.request)
-        
+        print("Server request info:",self.request) 
         while True:
             if after_firstTrail:
                 sourceList = list(df.loc[trail, ['PlayerA', 'PlayerB','PlayerC']])
@@ -78,19 +77,24 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 client_finish = self.request.recv(1024).strip().decode()
                 print("after client finish:", client_finish)
                 current_client.append(self.request)
-                finish_client += 1
+                finishSelect_client += 1
+                clientSelection[int(self.thread_id) - 1] = int(data)
 
             if len(current_client) >= max_client_count:
                 for s in current_client:
-                    s.sendall("can go to next trail!".encode())
+                    s.sendall(str(clientSelection).encode())
                 current_client.clear()
                 trail += 1
                 after_firstTrail = 1
-                finish_client = 0
+                finishSelect_client = 0
 
             while True:
-                if finish_client == 0:
+                if finishSelect_client == 0:
                     break
+                
+                
+
+
 
         self.request.close()
     def finish(self):
@@ -114,12 +118,15 @@ if __name__ == "__main__":
     ID_list = []
     ID_CLIENT = []
     current_client = []
-   
+    #clientSelection = []
+
+
     trail = 1
     after_firstTrail = 0
-    finish_client = 0
+    finishSelect_client = 0
     allclient_press5 = 0
-    max_client_count = 1
+    max_client_count = 3
+    clientSelection = [0] * max_client_count
     allclient_connect = 0
    
 
