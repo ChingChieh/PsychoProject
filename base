@@ -73,9 +73,9 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 break
             else:
                 print("client say:", data)
-                self.request.sendall(('%s' % data).encode())
-                client_finish = self.request.recv(1024).strip().decode()
-                print("after client finish:", client_finish)
+                #self.request.sendall(('%s' % data).encode())
+                #client_finish = self.request.recv(1024).strip().decode()
+                #print("after client finish:", client_finish)
                 current_client.append(self.request)
                 finishSelect_client += 1
                 clientSelection[int(self.thread_id) - 1] = int(data)
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     finishSelect_client = 0
     allclient_press5 = 0
     max_client_count = 1
-    clientSelection = [0] * max_client_count
+    clientSelection = [0] * 3
     allclient_connect = 0
 
 
