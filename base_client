@@ -141,7 +141,7 @@ class MainWindow(QMainWindow):
       self.end_t = time.time()
       self.set_stop_view()
       self.set_timer(self.timer_result, 3 - (self.end_t - self.start_t))
-      #self.mode = self.mode_dic['stop']
+      self.mode = self.mode_dic['stop']
     elif self.mode == self.mode_dic['alloc'] and key == QtCore.Qt.Key_1:
       self.alloc_src(self.my_id, self.other_id, -1)
       self.set_timer(self.timer_stop, 4)
