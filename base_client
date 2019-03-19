@@ -23,15 +23,22 @@ class MainWindow(QMainWindow):
     self.other_id = 3
     self.recv_data = 0
     self.sock = sock
+    self.my_result = -1
+    self.other_result = -1
+    self.first_in_alloc = True
 #### time
     self.start_t = 0
     self.end_t = 0
+    self.timer_start = QTimer(self)
+    self.timer_start.timeout.connect(self.set_start_view)
     self.timer_stop = QTimer(self)
     self.timer_stop.timeout.connect(self.set_stop_view)
     self.timer_alloc = QTimer(self)
     self.timer_alloc.timeout.connect(self.set_alloc_view)
+    self.timer_group = QTimer(self)
+    self.timer_group.timeout.connect(self.set_group_view)
     self.timer_result = QTimer(self)
-    self.timer_result.timeout.connect(self.set_group_view)
+    self.timer_result.timeout.connect(self.set_alloc_re_view)
 #### UI
     self.QtStack = QtWidgets.QStackedLayout()
     self.screen = QDesktopWidget().screenGeometry ()
@@ -69,8 +76,8 @@ class MainWindow(QMainWindow):
 
   def set_start_view(self):
     self.recv_data = self.sock.recv(1024).decode()
-    print("after press 5 in start view recv data:", self.recv_data)
-    print("#"*10)
+    print("receive data:", self.recv_data)
+    print("########## In start view")
     src_list = str_to_list(self.recv_data)
     self.set_src(self.my_id, src_list)
     self.mode = self.mode_dic['start']
@@ -78,25 +85,33 @@ class MainWindow(QMainWindow):
     self.QtStack.setCurrentIndex(0)
 
   def set_stop_view(self):
+    self.timer_stop.stop()
     if self.mode == self.mode_dic['alloc']:
+      self.first_in_alloc = True
+     # self.mode = self.mode_dic['stop']
       alloc_result = [0,0,0]
-      alloc_result[self.my_id-1] = my_result
-      alloc_result[self.other_id-1] = other_result
-      print("alloc_result: ")
-      print(alloc_result)
+      alloc_result[self.my_id-1] = self.my_result
+      alloc_result[self.other_id-1] = self.other_result
+      print("alloc_result: ", alloc_result)
       self.ConnectToServer(alloc_result)
+      self.set_timer(self.timer_result, 2)
+    print("########## In stop view")
     self.mode = self.mode_dic['stop']
     self.stop_view.label.setText("+")
     self.QtStack.setCurrentIndex(1)
 
   def set_wait_view(self):
+    print("########## In wait view")
     self.mode = self.mode_dic['wait']
     self.stop_view.label.setText("Wait")
     self.QtStack.setCurrentIndex(1)
 
   def set_alloc_view(self):
+    self.timer_alloc.stop()
+    print("########## In alloc view")
     self.mode = self.mode_dic['alloc']
     self.mask_alloc()
+    #FIXME the bigger one can alloc
     my_src = random.randint(0,11)
     self.init_alloc_view(my_src)
     other_src = 11 - my_src
@@ -109,9 +124,14 @@ class MainWindow(QMainWindow):
 
     #exec("self.start_view.%s.setText(\"%d\")" % (alloc_name, other_src) )
     self.QtStack.setCurrentIndex(0)
+    if self.first_in_alloc == True:
+      self.first_in_alloc = False
+      self.set_timer(self.timer_stop, 4)
 
   def set_group_view(self):
+    self.timer_group.stop()
     self.mode = self.mode_dic['wait']
+    print("########## In group view")
     print("group_view recv data: ", self.recv_data )
     re_list = str_to_list(self.recv_data)
     self.start_view.alloc_1.setText(str(re_list[self.left_id-1]))
@@ -120,6 +140,16 @@ class MainWindow(QMainWindow):
     self.QtStack.setCurrentIndex(0)
     self.set_timer(self.timer_stop, 2)
     self.set_timer(self.timer_alloc, 4)
+
+  def set_alloc_re_view(self):
+    print("receive data:", self.recv_data)
+    print("########## In allocate result view")
+    src_list = str_to_list(self.recv_data)
+    self.set_src(self.my_id, src_list)
+    self.mode = self.mode_dic['wait']
+    self.mask_alloc()
+    self.QtStack.setCurrentIndex(0)
+    self.set_timer(self.timer_start, 2)
 
   def keyPressEvent(self, event):
     assert(self.my_id != self.other_id), "my id is the same to other id. "
@@ -132,7 +162,7 @@ class MainWindow(QMainWindow):
       self.start_t = time.time()
       self.set_start_view()
     elif self.mode == self.mode_dic['start']:
-      select_id = 0
+      select_id = -1
       if key == QtCore.Qt.Key_2:
         select_id = self.right_id
       elif key == QtCore.Qt.Key_1:
@@ -140,14 +170,11 @@ class MainWindow(QMainWindow):
       self.ConnectToServer(select_id)
       self.end_t = time.time()
       self.set_stop_view()
-      self.set_timer(self.timer_result, 3 - (self.end_t - self.start_t))
-      self.mode = self.mode_dic['stop']
+      self.set_timer(self.timer_group, 5 - (self.end_t - self.start_t))
     elif self.mode == self.mode_dic['alloc'] and key == QtCore.Qt.Key_1:
       self.alloc_src(self.my_id, self.other_id, -1)
-      self.set_timer(self.timer_stop, 4)
     elif self.mode == self.mode_dic['alloc'] and key == QtCore.Qt.Key_2:
       self.alloc_src(self.my_id, self.other_id, 1)
-      self.set_timer(self.timer_stop, 4)
 
   def set_id(self, my_id):
     # my_id : int
@@ -167,26 +194,24 @@ class MainWindow(QMainWindow):
     QApplication.processEvents()
 
   def alloc_src(self, my_id, other_id, add_minus):
-    global my_result, other_result
     my_src = int(self.start_view.src_2.text())
     if my_src == 0 and add_minus == -1:
       return
     if my_id%3+1 == other_id:
-      #print(self.start_view.src_3.text())
       other_src = int(self.start_view.src_3.text())
       if other_src == 0 and add_minus == 1:
         return
-      other_result = other_src - add_minus
-      self.start_view.src_3.setText(str(other_result))
+      self.other_result = other_src - add_minus
+      self.start_view.src_3.setText(str(self.other_result))
     else:
       other_src = int(self.start_view.src_1.text())
       if other_src == 0 and add_minus == 1:
         return
-      other_result = other_src - add_minus
-      self.start_view.src_1.setText(str(other_result))
+      self.other_result = other_src - add_minus
+      self.start_view.src_1.setText(str(self.other_result))
 
-    my_result = my_src + add_minus
-    self.start_view.src_2.setText(str(my_result))
+    self.my_result = my_src + add_minus
+    self.start_view.src_2.setText(str(self.my_result))
     self.setCentralWidget(self.start_view.centralwidget)
 
   def set_timer(self, timer, wait_time):
@@ -201,8 +226,8 @@ class MainWindow(QMainWindow):
 
   def mask_alloc(self):
     self.start_view.alloc_1.setText("")
-    self.start_view.alloc_3.setText("")
     self.start_view.alloc_2.setText("")
+    self.start_view.alloc_3.setText("")
 
   def init_alloc_view(self, my_src):
     self.start_view.src_1.setText("")
