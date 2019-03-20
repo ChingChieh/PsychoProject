@@ -20,10 +20,11 @@ class MainWindow(QMainWindow):
     self.mode_dic = {'init': 1, 'start':2, 'stop':3, 'alloc':4, 'wait':5}
     self.mode = 1
     self.my_id = 0
-    self.other_id = 3
+    self.other_id = 0
     self.recv_data = 0
     self.sock = sock
     self.my_result = -1
+    self.select_id = -1
     self.other_result = -1
     self.first_in_alloc = True
 #### time
@@ -39,15 +40,18 @@ class MainWindow(QMainWindow):
     self.timer_group.timeout.connect(self.set_group_view)
     self.timer_result = QTimer(self)
     self.timer_result.timeout.connect(self.set_alloc_re_view)
+    self.timer_fail = QTimer(self)
+    self.timer_fail.timeout.connect(self.fail_handler)
 #### UI
     self.QtStack = QtWidgets.QStackedLayout()
     self.screen = QDesktopWidget().screenGeometry ()
-    self.showFullScreen()
+   # self.showFullScreen()
     self.Ui_setup()
     self.ConnectToServer(5)
     self.my_id = int(self.recv_data)
     self.left_id, self.right_id = self.get_id(self.my_id)
     self.set_id(self.my_id)
+    self.resize(self.screen.width(),self.screen.height())
 
   def ConnectToServer(self, data):
     print("send data: ", data)
@@ -83,12 +87,12 @@ class MainWindow(QMainWindow):
     self.mode = self.mode_dic['start']
     self.mask_alloc()
     self.QtStack.setCurrentIndex(0)
+    self.set_timer(self.timer_fail, 3)
 
   def set_stop_view(self):
     self.timer_stop.stop()
     if self.mode == self.mode_dic['alloc']:
       self.first_in_alloc = True
-     # self.mode = self.mode_dic['stop']
       alloc_result = [0,0,0]
       alloc_result[self.my_id-1] = self.my_result
       alloc_result[self.other_id-1] = self.other_result
@@ -101,6 +105,8 @@ class MainWindow(QMainWindow):
     self.QtStack.setCurrentIndex(1)
 
   def set_wait_view(self):
+    if self.mode == self.mode_dic['wait']
+      self.set_timer(self.timer_result, 6)
     print("########## In wait view")
     self.mode = self.mode_dic['wait']
     self.stop_view.label.setText("Wait")
@@ -133,13 +139,16 @@ class MainWindow(QMainWindow):
     self.mode = self.mode_dic['wait']
     print("########## In group view")
     print("group_view recv data: ", self.recv_data )
-    re_list = str_to_list(self.recv_data)
-    self.start_view.alloc_1.setText(str(re_list[self.left_id-1]))
-    self.start_view.alloc_2.setText(str(re_list[self.my_id-1]))
-    self.start_view.alloc_3.setText(str(re_list[self.right_id-1]))
+    re_list = str_to_list(self.recv_data) #re_list : tuple[group result][who can allocate]
+    self.start_view.alloc_1.setText(str(re_list[1][self.left_id-1]))
+    self.start_view.alloc_2.setText(str(re_list[1][self.my_id-1]))
+    self.start_view.alloc_3.setText(str(re_list[1][self.right_id-1]))
     self.QtStack.setCurrentIndex(0)
     self.set_timer(self.timer_stop, 2)
-    self.set_timer(self.timer_alloc, 4)
+    if re_list[self.my_id-1] == 1:
+      self.set_timer(self.timer_alloc, 4)
+    else:
+      self.set_timer(self.timer_wait, 4)
 
   def set_alloc_re_view(self):
     print("receive data:", self.recv_data)
@@ -162,12 +171,12 @@ class MainWindow(QMainWindow):
       self.start_t = time.time()
       self.set_start_view()
     elif self.mode == self.mode_dic['start']:
-      select_id = -1
+      self.timer_fail.stop()
       if key == QtCore.Qt.Key_2:
-        select_id = self.right_id
+        self.select_id = self.right_id
       elif key == QtCore.Qt.Key_1:
-        select_id = self.left_id
-      self.ConnectToServer(select_id)
+        self.select_id = self.left_id
+      self.ConnectToServer(self.select_id)
       self.end_t = time.time()
       self.set_stop_view()
       self.set_timer(self.timer_group, 5 - (self.end_t - self.start_t))
@@ -175,6 +184,9 @@ class MainWindow(QMainWindow):
       self.alloc_src(self.my_id, self.other_id, -1)
     elif self.mode == self.mode_dic['alloc'] and key == QtCore.Qt.Key_2:
       self.alloc_src(self.my_id, self.other_id, 1)
+
+  def fail_handler(self):
+    ConnectToServer(self.select_id)
 
   def set_id(self, my_id):
     # my_id : int
