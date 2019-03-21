@@ -17,7 +17,7 @@ import sys
 class MainWindow(QMainWindow):
   def __init__(self, sock, parent=None):
     super(MainWindow, self).__init__(parent)
-    self.mode_dic = {'init': 1, 'start':2, 'stop':3, 'alloc':4, 'wait':5}
+    self.mode_dic = {'init': 1, 'start':2, 'stop':3, 'alloc':4, 'wait':5, 'chosen':6}
     self.mode = 1
     self.my_id = 0
     self.other_id = 0
@@ -42,6 +42,8 @@ class MainWindow(QMainWindow):
     self.timer_result.timeout.connect(self.set_alloc_re_view)
     self.timer_fail = QTimer(self)
     self.timer_fail.timeout.connect(self.fail_handler)
+    self.timer_wait = QTimer(self)
+    self.timer_wait.timeout.connect(self.set_wait_view)
 #### UI
     self.QtStack = QtWidgets.QStackedLayout()
     self.screen = QDesktopWidget().screenGeometry ()
@@ -79,19 +81,27 @@ class MainWindow(QMainWindow):
        print(e)
 
   def set_start_view(self):
+    self.set_wait_view()
+    self.timer_start.stop()
     self.recv_data = self.sock.recv(1024).decode()
     print("receive data:", self.recv_data)
     print("########## In start view")
+    self.start_t = time.time()
     src_list = str_to_list(self.recv_data)
     self.set_src(self.my_id, src_list)
     self.mode = self.mode_dic['start']
     self.mask_alloc()
     self.QtStack.setCurrentIndex(0)
+    self.set_timer(self.timer_stop, 3)
     self.set_timer(self.timer_fail, 3)
 
   def set_stop_view(self):
     self.timer_stop.stop()
-    if self.mode == self.mode_dic['alloc']:
+    if self.mode == self.mode_dic['chosen']:
+      print("group chosen")
+      self.end_t = time.time()
+      self.set_timer(self.timer_group, 5 - (self.end_t - self.start_t))
+    elif self.mode == self.mode_dic['alloc']:
       self.first_in_alloc = True
       alloc_result = [0,0,0]
       alloc_result[self.my_id-1] = self.my_result
@@ -105,7 +115,8 @@ class MainWindow(QMainWindow):
     self.QtStack.setCurrentIndex(1)
 
   def set_wait_view(self):
-    if self.mode == self.mode_dic['wait']
+    self.timer_wait.stop()
+    if self.mode == self.mode_dic['wait']: # for not allcating one
       self.set_timer(self.timer_result, 6)
     print("########## In wait view")
     self.mode = self.mode_dic['wait']
@@ -140,12 +151,14 @@ class MainWindow(QMainWindow):
     print("########## In group view")
     print("group_view recv data: ", self.recv_data )
     re_list = str_to_list(self.recv_data) #re_list : tuple[group result][who can allocate]
-    self.start_view.alloc_1.setText(str(re_list[1][self.left_id-1]))
-    self.start_view.alloc_2.setText(str(re_list[1][self.my_id-1]))
-    self.start_view.alloc_3.setText(str(re_list[1][self.right_id-1]))
+    if re_list[0][0] == -1 or re_list[0][1] == -1 or re_list[0][2] == -1:
+      self.set_timer(self.timer_wait, 12)
+    self.start_view.alloc_1.setText(str(re_list[0][self.left_id-1]))
+    self.start_view.alloc_2.setText(str(re_list[0][self.my_id-1]))
+    self.start_view.alloc_3.setText(str(re_list[0][self.right_id-1]))
     self.QtStack.setCurrentIndex(0)
     self.set_timer(self.timer_stop, 2)
-    if re_list[self.my_id-1] == 1:
+    if re_list[1][self.my_id-1] == 1:
       self.set_timer(self.timer_alloc, 4)
     else:
       self.set_timer(self.timer_wait, 4)
@@ -168,25 +181,29 @@ class MainWindow(QMainWindow):
     elif self.mode == self.mode_dic['init'] and key == QtCore.Qt.Key_5:
       print("press 5")
       #self.set_wait_view()
-      self.start_t = time.time()
       self.set_start_view()
     elif self.mode == self.mode_dic['start']:
+      self.mode == self.mode_dic['chosen']
       self.timer_fail.stop()
       if key == QtCore.Qt.Key_2:
         self.select_id = self.right_id
       elif key == QtCore.Qt.Key_1:
         self.select_id = self.left_id
       self.ConnectToServer(self.select_id)
-      self.end_t = time.time()
       self.set_stop_view()
-      self.set_timer(self.timer_group, 5 - (self.end_t - self.start_t))
     elif self.mode == self.mode_dic['alloc'] and key == QtCore.Qt.Key_1:
       self.alloc_src(self.my_id, self.other_id, -1)
     elif self.mode == self.mode_dic['alloc'] and key == QtCore.Qt.Key_2:
       self.alloc_src(self.my_id, self.other_id, 1)
 
   def fail_handler(self):
-    ConnectToServer(self.select_id)
+    self.timer_fail.stop()
+    self.ConnectToServer(self.select_id)
+    print("########## In fail handler")
+    self.mode = self.mode_dic['wait']
+    self.set_timer(self.timer_group, 2)
+    #self.set_wait_view()
+    #self.set_timer(self.timer_start, 14)
 
   def set_id(self, my_id):
     # my_id : int
