@@ -1,0 +1,55 @@
+#!/usr/bin/env python3    
+import socket
+import select
+import sys
+import getch # detect if client press '5', need to install this package
+import json
+import time
+from ast import literal_eval
+
+msg = [{'src':"yeeeeeeee",'dst':"hahahaha"}]
+jmsg = json.dumps(msg)
+TimeOut = 30
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+    Host = socket.gethostbyname(socket.gethostname())
+    print("Host:",Host)
+    sock.connect((Host, 10001))
+    print("wait for server...")
+    print(sock.recv(1024).decode())
+    while True:
+        key = getch.getch()
+        if key == '5':
+            print("success!")
+            sock.send('5'.encode())
+            clientID = sock.recv(1024).decode()
+            print("After press 5 I got and ID:",clientID)
+            break
+        else:
+            print("pleas press '5'")
+    
+    while True:
+        sourceList = sock.recv(1024).decode()
+        print("get list",sourceList);
+        print("> ", end='', flush=True)   
+        inputStart = time.time()
+        i, o, e = select.select( [sys.stdin], [], [], TimeOut )
+        if i:
+            inputEnd = time.time()
+            print("you spend ", inputEnd - inputStart, " second on input")
+            data = sys.stdin.readline().strip()
+            if data == "":
+                break
+            sock.send(data.encode())
+            print (sock.recv(1024).decode())
+            # sock.send("finish one transit".encode())
+            # print (sock.recv(1024).decode())
+        else:
+            print("\nYou miss one trail!")
+            data = "-1"
+            sock.send(data.encode())
+            print(sock.recv(1024).decode())
+            sock.send("all clients jump to the next trail".encode())
+            print(sock.recv(1024).decode())
+
+    sock.close()
