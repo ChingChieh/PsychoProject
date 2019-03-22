@@ -186,7 +186,7 @@ class MainWindow(QMainWindow):
       print("press 5")
       self.ConnectToServer(5)
       self.set_start_view()
-    elif self.mode == self.mode_dic['start'] and  key == QtCore.Qt.Key_2 and  key == QtCore.Qt.Key_1:
+    elif self.mode == self.mode_dic['start'] and ( key == QtCore.Qt.Key_2 or key == QtCore.Qt.Key_1):
       self.mode = self.mode_dic['chosen']
       self.timer_fail.stop()
       if key == QtCore.Qt.Key_1:
