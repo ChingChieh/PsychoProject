@@ -29,8 +29,8 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             print(ID_list,current_client)
             signal = input("All users are connected. Wait for signal (type any key and \"enter\" or \"enter\" only): ")
             message = "press 5 to continue"
-            #for s in current_client:
-            #    s.sendall(bytes(message,"utf-8"))
+            for s in current_client:
+                s.sendall(bytes(message,"utf-8"))
             print("wait for clients to answer...")
             ID_CLIENT = current_client.copy()
             current_client.clear()
@@ -88,7 +88,8 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
             if len(current_client) >= max_client_count:   # 傳送給每個client, 所有client選了誰
                 if (-1 in clientSelection) or (sum(clientSelection) == 6):
-                    clientSelection = [-1, -1, -1]
+                    # clientSelection = [-1, -1, -1]
+                    whoPick = [-1,-1,-1]
                     trailFail = 1
                 
                 if not trailFail:
