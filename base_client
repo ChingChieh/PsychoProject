@@ -83,11 +83,12 @@ class MainWindow(QMainWindow):
        print(e)
 
   def set_start_view(self):
-    self.set_wait_view()
+    #self.set_wait_view()
     self.timer_start.stop()
     print("receive data:", self.recv_data)
     print("########## In start view")
     self.start_t = time.time()
+    print("Start Time: ", self.start_t)
     src_list = str_to_list(self.recv_data)
     self.set_src(self.my_id, src_list)
     self.mode = self.mode_dic['start']
@@ -291,7 +292,7 @@ def main():
 
   with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     Host = socket.gethostbyname(socket.gethostname())
-    #Host = "10.3.207.113"
+    Host = "10.3.207.141"
     print("Host:",Host)
     sock.connect((Host, 10001))
     print("wait for server...")
