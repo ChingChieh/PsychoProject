@@ -16,6 +16,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
         #print(df.head())
         global current_client, allclient_connect, allclient_press5, lock, ID_CLIENT, trail, sourceList
         self.thread_id = threading.currentThread().getName().split("-")[1]
+        self.data = None;
         self.request.send(bytes(str(self.thread_id),"utf-8"))
         lock.acquire()
         ID_list.append(self.thread_id)
@@ -62,7 +63,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
 
     def handle(self):
-        global finishSelect_client, after_firstTrail, trail, clientSelection, trailFail, whoPick, sourceList
+        global finishSelect_client, after_firstTrail, trail, clientSelection, trailFail, whoPick, sourceList, allocate, allocList
         # print('connect from ', self.client_address)
         # cur_trd = threading.current_thread()
         print("Server request info:",self.request)
@@ -72,18 +73,17 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 self.request.send(bytes(str(sourceList),"utf-8"))
 
 
-            data = None;
-            data = self.request.recv(1024).strip().decode()
-            if not data:  # If client disconnect data will be None
+            self.data = self.request.recv(1024).strip().decode()
+            if not self.data:  # If client disconnect data will be None
                 break
             else:
-                print(self.thread_id ,"client say:", data)
+                print(self.thread_id ,"client say:", self.data)
                 #self.request.sendall(('%s' % data).encode())
                 #client_finish = self.request.recv(1024).strip().decode()
                 #print("after client finish:", client_finish)
                 current_client.append(self.request)
                 finishSelect_client += 1
-                clientSelection[int(self.thread_id) - 1] = int(data)
+                clientSelection[int(self.thread_id) - 1] = int(self.data)
 
             if len(current_client) >= max_client_count:   # 傳送給每個client, 所有client選了誰
                 if (-1 in clientSelection) or (sum(clientSelection) == 6):
@@ -121,6 +121,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 trail += 1
                 after_firstTrail = 1
                 finishSelect_client = 0
+                allocate = 0
 
             while True:
                 if finishSelect_client == 0:
@@ -133,6 +134,18 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 print("time elapse: ", b - a)
                 trailFail = 0
                 clientSelection = [0] * 3
+                continue
+            print("whoPick type:",type(whoPick))
+            if whoPick[int(self.thread_id) - 1]:
+                allocList = self.request.recv(1024).strip().decode()
+                allocate = 1
+            else: 
+                while True:
+                    if allocate == 1:
+                        break
+
+            self.request.send(bytes(str(allocList),"utf-8"))
+
 
         self.request.close()
     def finish(self):
@@ -157,6 +170,7 @@ def randTwoNumber(num1,num2):
 if __name__ == "__main__":
     lock = threading.Lock()
     sourceList = []
+    allocList = []
     ID_list = []
     ID_CLIENT = []
     current_client = []
@@ -172,7 +186,7 @@ if __name__ == "__main__":
     clientSelection = [0] * 3
     whoPick = [0] * 3
     allclient_connect = 0
-
+    allocate = 0
 
 
     df = getData();
