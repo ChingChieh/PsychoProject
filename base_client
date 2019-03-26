@@ -9,7 +9,6 @@ from ast import literal_eval
 import random
 import socket
 import select
-import getch # detect if client press '5', need to install this package
 import json
 import time
 import sys
@@ -17,7 +16,7 @@ import sys
 class MainWindow(QMainWindow):
   def __init__(self, sock, parent=None):
     super(MainWindow, self).__init__(parent)
-    self.mode_dic = {'init': 1, 'start':2, 'stop':3, 'alloc':4, 'wait':5, 'chosen':6}
+    self.mode_dic = {'init': 1, 'start':2, 'stop':3, 'alloc':4, 'wait':5, 'chosen':6, 'fail':7}
     self.mode = 1
     self.my_id = 0
     self.other_id = 0
@@ -85,6 +84,8 @@ class MainWindow(QMainWindow):
   def set_start_view(self):
     #self.set_wait_view()
     self.timer_start.stop()
+    if self.mode != self.mode_dic['init']:
+      self.recv_data = self.sock.recv(1024).decode()
     print("receive data:", self.recv_data)
     print("########## In start view")
     self.start_t = time.time()
@@ -126,7 +127,10 @@ class MainWindow(QMainWindow):
     #if self.mode == self.mode_dic['wait']: # for not allcating one
     print("########## In wait view")
     print("wait for restarting")
-    self.set_timer(self.timer_start, 8)
+    if self.mode == self.mode_dic['fail']:
+      self.set_timer(self.timer_start, 8)
+    else:
+      self.set_timer(self.timer_start, 6)
     self.mode = self.mode_dic['wait']
     self.stop_view.label.setText("Fail & Wait")
     self.QtStack.setCurrentIndex(1)
@@ -163,6 +167,7 @@ class MainWindow(QMainWindow):
     self.group_src = re_list[1]
     if re_list[0][0] == -1 or re_list[0][1] == -1 or re_list[0][2] == -1 or sum(re_list[1]) == -3:
       print("group fail")
+      self.mode = self.mode_dic['fail']
       self.set_timer(self.timer_wait, 4)
     self.start_view.alloc_1.setText(str(re_list[0][self.left_id-1]))
     self.start_view.alloc_2.setText(str(re_list[0][self.my_id-1]))
@@ -210,7 +215,8 @@ class MainWindow(QMainWindow):
 
   def fail_handler(self):
     self.timer_fail.stop()
-    self.ConnectToServer(self.select_id)
+    #self.ConnectToServer(self.select_id)
+    self.ConnectToServer(-1)
     print("########## In fail handler")
     self.mode = self.mode_dic['wait']
     self.set_timer(self.timer_group, 2)
