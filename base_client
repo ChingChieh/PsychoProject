@@ -16,7 +16,7 @@ import sys
 class MainWindow(QMainWindow):
   def __init__(self, sock, parent=None):
     super(MainWindow, self).__init__(parent)
-    self.mode_dic = {'init': 1, 'start':2, 'stop':3, 'alloc':4, 'wait':5, 'chosen':6, 'fail':7}
+    self.mode_dic = {'init': 1, 'start':2, 'stop':3, 'alloc':4, 'wait':5, 'chosen':6, 'fail':7, 'group':8}
     self.mode = 1
     self.my_id = 0
     self.other_id = 0
@@ -26,6 +26,7 @@ class MainWindow(QMainWindow):
     self.select_id = -1
     self.other_result = -1
     self.group_src = [0,0,0]
+    self.if_allcator = True
     self.first_in_alloc = True
 #### time
     self.start_t = 0
@@ -83,6 +84,7 @@ class MainWindow(QMainWindow):
 
   def set_start_view(self):
     #self.set_wait_view()
+    self.restart_init()
     self.timer_start.stop()
     if self.mode != self.mode_dic['init']:
       self.recv_data = self.sock.recv(1024).decode()
@@ -93,7 +95,6 @@ class MainWindow(QMainWindow):
     src_list = str_to_list(self.recv_data)
     self.set_src(self.my_id, src_list)
     self.mode = self.mode_dic['start']
-    self.mask_alloc()
     self.QtStack.setCurrentIndex(0)
     self.set_timer(self.timer_stop, 3)
     self.set_timer(self.timer_fail, 3)
@@ -117,6 +118,12 @@ class MainWindow(QMainWindow):
       print("alloc_result: ", alloc_result)
       self.ConnectToServer(alloc_result)
       self.set_timer(self.timer_result, 2)
+    elif self.mode == self.mode_dic['group'] and self.if_allcator == False:
+      print("Allocatee in stop mode")
+      #FIXME
+      self.set_timer(self.timer_wait, 2)
+      self.set_timer(self.timer_result, 6)
+
     print("########## In stop view")
     self.mode = self.mode_dic['stop']
     self.stop_view.label.setText("+")
@@ -127,12 +134,14 @@ class MainWindow(QMainWindow):
     #if self.mode == self.mode_dic['wait']: # for not allcating one
     print("########## In wait view")
     print("wait for restarting")
+    self.stop_view.label.setText("Wait")
     if self.mode == self.mode_dic['fail']:
+      print("In fail case")
       self.set_timer(self.timer_start, 8)
+      self.stop_view.label.setText("Fail & Wait")
     else:
       self.set_timer(self.timer_start, 6)
     self.mode = self.mode_dic['wait']
-    self.stop_view.label.setText("Fail & Wait")
     self.QtStack.setCurrentIndex(1)
 
   def set_alloc_view(self):
@@ -140,8 +149,7 @@ class MainWindow(QMainWindow):
     print("########## In alloc view")
     self.mode = self.mode_dic['alloc']
     self.mask_alloc()
-    #FIXME the bigger one can alloc
-    #my_src = random.randint(0,11)
+    my_src = random.randint(0,11)
     my_src = self.group_src[self.my_id-1]
     self.init_alloc_view(my_src)
     other_src = 11 - my_src
@@ -160,7 +168,7 @@ class MainWindow(QMainWindow):
 
   def set_group_view(self):
     self.timer_group.stop()
-    self.mode = self.mode_dic['wait']
+    self.mode = self.mode_dic['group']
     print("########## In group view")
     print("group_view recv data: ", self.recv_data )
     re_list = str_to_list(self.recv_data) #re_list : tuple[group result][who can allocate]
@@ -174,15 +182,21 @@ class MainWindow(QMainWindow):
     self.start_view.alloc_3.setText(str(re_list[0][self.right_id-1]))
     self.QtStack.setCurrentIndex(0)
     self.set_timer(self.timer_stop, 2)
-    if re_list[1][self.my_id-1] == 1:
-      self.set_timer(self.timer_alloc, 4)
-    else:
-      self.set_timer(self.timer_wait, 4)
+    if self.mode != self.mode_dic['fail']:
+      if re_list[1][self.my_id-1] == 1:
+        self.set_timer(self.timer_alloc, 4)
+      else:
+        self.if_allcator = False
+        print("allocatee set timer_wait 4s in GV")
+        self.set_timer(self.timer_wait, 4)
 
   def set_alloc_re_view(self):
     self.timer_result.stop()
-    print("receive data:", self.recv_data)
     print("########## In allocate result view")
+    if self.mode == self.mode_dic['wait'] and self.if_allcator == False:
+      self.recv_data = self.sock.recv(1024).decode()
+      print("Allocatee in result view and recv data")
+    print("receive data:", self.recv_data)
     src_list = str_to_list(self.recv_data)
     self.set_src(self.my_id, src_list)
     self.mode = self.mode_dic['wait']
@@ -280,6 +294,13 @@ class MainWindow(QMainWindow):
     self.start_view.src_3.setText("")
     self.start_view.src_1.setStyleSheet("color : gray;")
     self.start_view.src_3.setStyleSheet("color : gray;")
+
+  def restart_init(self):
+    self.start_view.src_1.setStyleSheet("color : black;")
+    self.start_view.src_2.setStyleSheet("color : black;")
+    self.start_view.src_2.setStyleSheet("color : black;")
+    self.if_allcator = True
+    self.mask_alloc()
 
 #########
 
