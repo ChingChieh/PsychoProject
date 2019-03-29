@@ -26,6 +26,7 @@ class MainWindow(QMainWindow):
     self.select_id = -1
     self.other_result = -1
     self.group_src = [0,0,0]
+    self.if_fail = False
     self.if_allcator = True
     self.first_in_alloc = True
 #### time
@@ -110,7 +111,7 @@ class MainWindow(QMainWindow):
       else:
         self.set_timer(self.timer_group, 2)
     elif self.mode == self.mode_dic['alloc']:
-      print("Allocator in stop mode")
+      print("Allocator in stop mode(3)")
       self.first_in_alloc = True
       alloc_result = [0,0,0]
       alloc_result[self.my_id-1] = self.my_result
@@ -119,10 +120,9 @@ class MainWindow(QMainWindow):
       self.ConnectToServer(alloc_result)
       self.set_timer(self.timer_result, 2)
     elif self.mode == self.mode_dic['group'] and self.if_allcator == False:
-      print("Allocatee in stop mode")
-      #FIXME
+      print("Allocatee in stop mode(2)")
       self.set_timer(self.timer_wait, 2)
-      self.set_timer(self.timer_result, 6)
+      self.set_timer(self.timer_result, 8)
 
     print("########## In stop view")
     self.mode = self.mode_dic['stop']
@@ -133,14 +133,16 @@ class MainWindow(QMainWindow):
     self.timer_wait.stop()
     #if self.mode == self.mode_dic['wait']: # for not allcating one
     print("########## In wait view")
+    print(time.time())
     print("wait for restarting")
     self.stop_view.label.setText("Wait")
-    if self.mode == self.mode_dic['fail']:
+    if self.if_fail == True:
       print("In fail case")
       self.set_timer(self.timer_start, 8)
       self.stop_view.label.setText("Fail & Wait")
+      self.if_fail = False
     else:
-      self.set_timer(self.timer_start, 6)
+      self.set_timer(self.timer_result, 6)
     self.mode = self.mode_dic['wait']
     self.QtStack.setCurrentIndex(1)
 
@@ -232,6 +234,7 @@ class MainWindow(QMainWindow):
     #self.ConnectToServer(self.select_id)
     self.ConnectToServer(-1)
     print("########## In fail handler")
+    self.if_fail = True
     self.mode = self.mode_dic['wait']
     self.set_timer(self.timer_group, 2)
 
@@ -298,8 +301,9 @@ class MainWindow(QMainWindow):
   def restart_init(self):
     self.start_view.src_1.setStyleSheet("color : black;")
     self.start_view.src_2.setStyleSheet("color : black;")
-    self.start_view.src_2.setStyleSheet("color : black;")
+    self.start_view.src_3.setStyleSheet("color : black;")
     self.if_allcator = True
+    self.if_fail = False
     self.mask_alloc()
 
 #########
@@ -325,7 +329,7 @@ def main():
 
   with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     Host = socket.gethostbyname(socket.gethostname())
-    #Host = "10.3.207.141"
+    #Host = "10.3.207.65"
     print("Host:",Host)
     sock.connect((Host, 10001))
     print("wait for server...")
