@@ -27,3 +27,13 @@ $ All users are connected. Wait for signal (type any key and "enter" or "enter" 
 ### 測驗開始
 以下是 ID 為 3 的人的畫面，按 1 代表選 ID 2 的人，按 2 代表選右邊的人
 ![](https://i.imgur.com/6mPxYqz.png)
+
+### 不同台電腦測試
+要先把 base_client 裡面第 355 行的 Host 參數改成 server 的 IP
+```python
+# 原本
+Host = socket.gethostbyname(socket.gethostname())
+
+# 改成 server 所在的 IP
+Host = '140.116.xxx.xxx'
+```
