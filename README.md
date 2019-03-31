@@ -1,4 +1,13 @@
 # 使用法方
+## 先把專案複製到本地端
+在終端機 (terminal) 輸入
+```
+$ git clone https://github.com/ChingChieh/PsychoProject.git
+```
+然後進入該 directory
+```
+$ cd PsychoProject
+```
 ## 開始
 在終端機 (terminal) 打以下
 - 啟動 server:
