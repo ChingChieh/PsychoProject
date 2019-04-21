@@ -193,7 +193,7 @@ class MainWindow(QMainWindow):
       self.if_fail = True
       self.mode = self.mode_dic['fail']
       self.set_timer(self.timer_wait, 4)
-	else:
+    else:
       self.other_id = self.re_list[0][self.my_id-1]
     self.start_view.alloc_1.setText(str(re_list[0][self.left_id-1]))
     self.start_view.alloc_2.setText(str(re_list[0][self.my_id-1]))
