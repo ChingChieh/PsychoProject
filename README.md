@@ -1,4 +1,4 @@
-# 使用法方
+# 使用方法
 ## 先把專案複製到本地端
 在終端機 (terminal) 輸入
 ```
@@ -12,11 +12,11 @@ $ cd PsychoProject
 在終端機 (terminal) 打以下
 - 啟動 server:
 ```
-$ ./base
+$ python base_windows
 ```
 - 啟動 client:
 ```
-$ ./base_client
+$ python base_client
 ```
 目前需要 3 個 client 才能開始運作，如果要在同一台電腦上測試可以多開幾個 terminal 視窗來跑 client
 
