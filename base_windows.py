@@ -98,32 +98,33 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                         # clientSelection = [-1, -1, -1]
                         whoPick[i] = [-1,-1,-1]
                         trailFail[i] = 1
-                
-                if not trailFail:
-                    # 該決定誰要開始
-                    whoPick[0] = (clientSelection[clientSelection[0] - 1] == 1) * 1    
-                    whoPick[1] = (clientSelection[clientSelection[1] - 1] == 2) * 1    
-                    whoPick[2] = (clientSelection[clientSelection[2] - 1] == 3) * 1    
-                    print(whoPick)
-                    print("####",sourceList)
-                    whoPick = [a * b for a,b in zip(whoPick,sourceList)]
-                    print(whoPick)
-                
-                    whoPickMax = max(whoPick)
-                    if whoPick.count(whoPickMax) - 1:
-                        minIndex = whoPick.index(min(whoPick))
-                        whoPick[randTwoNumber((minIndex + 1) % 3, (minIndex + 2) % 3)] = 0
-                        whoPick[whoPick.index(max(whoPick))] = 1
-                        print(whoPick)
-                    else:
-                        maxIndex = whoPick.index(whoPickMax)
-                        whoPick[(maxIndex + 1) % 3] = 0
-                        whoPick[(maxIndex + 2) % 3] = 0
-                        whoPick[whoPick.index(max(whoPick))] = 1   
-                        print(whoPick)
+               
+                for i in range(len(trailFail)):
+                    if not trailFail[i]:
+                        # 該決定誰要開始
+                        whoPick[i][0] = (clientSelection[i][clientSelection[i][0] - 1] == 1) * 1    
+                        whoPick[i][1] = (clientSelection[i][clientSelection[i][1] - 1] == 2) * 1    
+                        whoPick[i][2] = (clientSelection[i][clientSelection[i][2] - 1] == 3) * 1    
+                        print(whoPick[i])
+                        print("####",sourceList)
+                        whoPick[i] = [a * b for a,b in zip(whoPick[i],sourceList)]
+                        print(whoPick[i])
+                    
+                        whoPickMax = max(whoPick[i])
+                        if whoPick[i].count(whoPickMax) - 1:
+                            minIndex = whoPick[i].index(min(whoPick[i]))
+                            whoPick[i][randTwoNumber((minIndex + 1) % 3, (minIndex + 2) % 3)] = 0
+                            whoPick[i][whoPick[i].index(max(whoPick[i]))] = 1
+                            print(whoPick[i])
+                        else:
+                            maxIndex = whoPick[i].index(whoPickMax)
+                            whoPick[i][(maxIndex + 1) % 3] = 0
+                            whoPick[i][(maxIndex + 2) % 3] = 0
+                            whoPick[i][whoPick[i].index(max(whoPick[i]))] = 1   
+                            print(whoPick[i])
 
-                for s in current_client:
-                    s.sendall((str(clientSelection) + ',' + str(whoPick)).encode())
+                for index,s in enumerate(ID_CLIENT):
+                    s.sendall((str(clientSelection[index // 3]) + ',' + str(whoPick[index // 3])).encode())
                     
                 current_client.clear()
                 trail += 1
