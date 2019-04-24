@@ -36,10 +36,11 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             print("wait for clients to answer...")
             ID_CLIENT = current_client.copy()
 
-            # Initialize 2D array
+            # Initialize global variable
             clientSelection = [[0 for x in range(3)] for y in range(len(ID_list) // 3)]
             whoPick = [[0 for x in range(3)] for y in range(len(ID_list) // 3)]
-            
+            trailFail = [0 for i in range(len(ID_list) // 3)]
+
             current_client.clear()
             allclient_connect = 1
 
@@ -92,10 +93,11 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 clientSelection[getGroup(self.thread_id) - 1][(int(self.thread_id) - 1) % 3] = int(self.data)
 
             if len(current_client) >= max_client_count:   # 傳送給每個client, 所有client選了誰
-                if (-1 in clientSelection) or (sum(clientSelection) == 6):
-                    # clientSelection = [-1, -1, -1]
-                    whoPick = [-1,-1,-1]
-                    trailFail = 1
+                for i in range(len(ID_list) // 3):
+                    if (-1 in clientSelection[i]) or (sum(clientSelection[i]) == 6):
+                        # clientSelection = [-1, -1, -1]
+                        whoPick[i] = [-1,-1,-1]
+                        trailFail[i] = 1
                 
                 if not trailFail:
                     # 該決定誰要開始
@@ -191,7 +193,7 @@ if __name__ == "__main__":
     
     # variable
     trail = 1
-    trailFail = 0
+    trailFail = 0              # Initialize in setup method
     after_firstTrail = 0
     finishSelect_client = 0
     allclient_press5 = 0
