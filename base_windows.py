@@ -14,7 +14,7 @@ import random
 class MyRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
         #print(df.head())
-        global current_client, allclient_connect, allclient_press5, lock, ID_CLIENT, trail, sourceList
+        global current_client, allclient_connect, allclient_press5, lock, ID_CLIENT, trail, sourceList, clientSelection
         self.thread_id = int(threading.currentThread().getName().split("-")[1])
         self.data = None;
         self.request.send(bytes(str((self.thread_id - 1) % 3 + 1),"utf-8"))
@@ -35,6 +35,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 s.sendall(bytes(message,"utf-8"))
             print("wait for clients to answer...")
             ID_CLIENT = current_client.copy()
+            clientSelection = [[0 for x in range(3)] for y in range(len(ID_list) // 3)]
             current_client.clear()
             allclient_connect = 1
 
@@ -57,7 +58,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             current_client.clear()
             allclient_press5 = 1
             # trail += 1
-
+            
         while True:
             if allclient_press5 == 1:
                 break
@@ -184,8 +185,6 @@ if __name__ == "__main__":
     ID_CLIENT = []
     current_client = []
     
-    #clientSelection = []
-
     # variable
     trail = 1
     trailFail = 0
@@ -193,7 +192,7 @@ if __name__ == "__main__":
     finishSelect_client = 0
     allclient_press5 = 0
     max_client_count = 4       # This variable decide how many client can connect 
-    clientSelection = [0] * 3
+    clientSelection = []       # Initialize in setup method
     whoPick = [0] * 3
     allclient_connect = 0
     allocate = 0
