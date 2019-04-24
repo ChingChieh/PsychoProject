@@ -14,7 +14,7 @@ import random
 class MyRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
         #print(df.head())
-        global current_client, allclient_connect, allclient_press5, lock, ID_CLIENT, trail, sourceList, clientSelection
+        global current_client, allclient_connect, allclient_press5, lock, ID_CLIENT, trail, sourceList, clientSelection, whoPick
         self.thread_id = int(threading.currentThread().getName().split("-")[1])
         self.data = None;
         self.request.send(bytes(str((self.thread_id - 1) % 3 + 1),"utf-8"))
@@ -35,7 +35,11 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 s.sendall(bytes(message,"utf-8"))
             print("wait for clients to answer...")
             ID_CLIENT = current_client.copy()
+
+            # Initialize 2D array
             clientSelection = [[0 for x in range(3)] for y in range(len(ID_list) // 3)]
+            whoPick = [[0 for x in range(3)] for y in range(len(ID_list) // 3)]
+            
             current_client.clear()
             allclient_connect = 1
 
@@ -85,7 +89,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 #print("after client finish:", client_finish)
                 current_client.append(self.request)
                 finishSelect_client += 1
-                clientSelection[int(self.thread_id) - 1] = int(self.data)
+                clientSelection[getGroup(self.thread_id) - 1][(int(self.thread_id) - 1) % 3] = int(self.data)
 
             if len(current_client) >= max_client_count:   # 傳送給每個client, 所有client選了誰
                 if (-1 in clientSelection) or (sum(clientSelection) == 6):
@@ -193,7 +197,7 @@ if __name__ == "__main__":
     allclient_press5 = 0
     max_client_count = 4       # This variable decide how many client can connect 
     clientSelection = []       # Initialize in setup method
-    whoPick = [0] * 3
+    whoPick = [0] * 3          # Initialize in setup method
     allclient_connect = 0
     allocate = 0
     connected_client = 0
