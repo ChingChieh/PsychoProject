@@ -164,6 +164,12 @@ def getData():
     df.drop([0],axis = 0, inplace=True)
     return df
 
+def getGroup(ID):
+    group = int((ID_list.index(ID))) // 3 + 1
+    return group
+    
+    
+
 def randTwoNumber(num1,num2):
     ran = random.randint(0,1)
     return num1 if ran else num2
@@ -177,7 +183,7 @@ if __name__ == "__main__":
     ID_list = []
     ID_CLIENT = []
     current_client = []
-    group = []
+    
     #clientSelection = []
 
     # variable
