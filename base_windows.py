@@ -136,16 +136,16 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 if finishSelect_client == 0:
                     break
 
-            if trailFail == 1:
+            if trailFail[getGroup(self.thread_id) - 1] == 1:
                 a = time.time()
                 sleep(14)
                 b = time.time()
                 print("time elapse: ", b - a)
-                trailFail = 0
-                clientSelection = [0] * 3
+                trailFail[getGroup(self.thread_id) - 1] = 0
+                clientSelection[getGroup(self.thread_id) - 1] = [0] * 3
                 continue
-            print("whoPick type:",type(whoPick))
-            if whoPick[int(self.thread_id) - 1]:
+
+            if whoPick[getGroup(self.thread_id) - 1][(int(self.thread_id) - 1) % 3]:
                 allocList = self.request.recv(1024).strip().decode()
                 allocate = 1
             else: 
