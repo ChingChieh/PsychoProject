@@ -15,13 +15,15 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
         #print(df.head())
         global current_client, allclient_connect, allclient_press5, lock, ID_CLIENT, trail, sourceList
-        self.thread_id = threading.currentThread().getName().split("-")[1]
+        self.thread_id = int(threading.currentThread().getName().split("-")[1])
         self.data = None;
-        self.request.send(bytes(str(self.thread_id),"utf-8"))
+        self.request.send(bytes(str((self.thread_id - 1) % 3 + 1),"utf-8"))
+        
         lock.acquire()
         ID_list.append(self.thread_id)
         current_client.append(self.request)
         lock.release()
+        
         print('a user connect, IP:',self.client_address)
         print("This thread id",self.thread_id)
         if len(current_client) >= max_client_count: # only one client will enter this IF condition
@@ -45,7 +47,6 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
         # In this if, server send ID to all clients and pass the first source list to them
         if len(current_client) >= max_client_count:
-            print("GGININDER")
             #tcflush(sys.stdin, TCIFLUSH)  # clean the input queue, try to avoid type 'enter' beforehead
             message = "Start the game!"
             #for s,i in zip(ID_CLIENT,ID_list):
@@ -168,25 +169,29 @@ def randTwoNumber(num1,num2):
     return num1 if ran else num2
 
 if __name__ == "__main__":
+
+    # List variable
     lock = threading.Lock()
     sourceList = []
     allocList = []
     ID_list = []
     ID_CLIENT = []
     current_client = []
+    group = []
     #clientSelection = []
 
-
+    # variable
     trail = 1
     trailFail = 0
     after_firstTrail = 0
     finishSelect_client = 0
     allclient_press5 = 0
-    max_client_count = 3 
+    max_client_count = 4       # This variable decide how many client can connect 
     clientSelection = [0] * 3
     whoPick = [0] * 3
     allclient_connect = 0
     allocate = 0
+    connected_client = 0
 
 
     df = getData();
