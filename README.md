@@ -11,18 +11,22 @@ $ cd PsychoProject
 ## 開始
 在終端機 (terminal) 打以下
 - 啟動 server:
-```
-$ python base_windows
-```
+    - 預設是三個 client
+    ```
+    $ python base_windows
+    ```
+    - 輸入其他數量的 client (3 的倍數)
+    ```
+    $ python base_windows 6
+    ```
 - 啟動 client:
 ```
 $ python base_client
 ```
-目前需要 3 個 client 才能開始運作，如果要在同一台電腦上測試可以多開幾個 terminal 視窗來跑 client
 
 ## 中間過程
 ### 連線完成
-當三個 clients 都連上 server 之後 server 的終端機視窗會出現
+當全部 clients 都連上 server 之後 server 的終端機視窗會出現
 ```
 $ All users are connected. Wait for signal (type any key and "enter" or "enter" only):
 ```
