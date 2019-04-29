@@ -184,6 +184,13 @@ def randTwoNumber(num1,num2):
     ran = random.randint(0,1)
     return num1 if ran else num2
 
+def RepresentsInt(s):
+    try: 
+        int(s)
+        return True
+    except ValueError:
+        return False
+
 if __name__ == "__main__":
 
     # List variable
@@ -200,7 +207,7 @@ if __name__ == "__main__":
     after_firstTrail = 0
     finishSelect_client = 0
     allclient_press5 = 0
-    max_client_count = 6       # This variable decide how many client can connect 
+    max_client_count = 3       # This variable decide how many client can connect 
     clientSelection = []       # Initialize in setup method
     whoPick = [0] * 3          # Initialize in setup method
     allclient_connect = 0
@@ -214,6 +221,19 @@ if __name__ == "__main__":
     # HOST, PORT = '127.0.0.1', 10001
     HOST = socket.gethostbyname(socket.gethostname())   # check current IP address
     PORT = 10001
+
+    if (len(sys.argv) == 2):
+        if(RepresentsInt(sys.argv[1])) and not(int(sys.argv[1]) % 3):
+            max_client_count = int(sys.argv[1])
+        else:
+            print("Input format is wrong, please try: python base_windows.py 6")
+            print("Can change number after program to other number that is multiple of 3")
+            sys.exit() 
+    else:
+        pass
+
+    print("max_client_count:",max_client_count)
+
     print(HOST)
     ADDRESS = (HOST,PORT)
     try:
