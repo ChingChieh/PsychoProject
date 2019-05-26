@@ -270,9 +270,8 @@ class MainWindow(QMainWindow):
 
   def fail_handler(self):
     self.timer_fail.stop()
-    #self.ConnectToServer(self.select_id)
-    self.ConnectToServer(-1)
     self.time_list.append(-1)
+    self.ConnectToServer(self.time_list)
     print("########## In fail handler")
     self.if_fail = True
     self.mode = self.mode_dic['wait']
