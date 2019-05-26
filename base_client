@@ -28,9 +28,13 @@ class MainWindow(QMainWindow):
     self.group_src = [0,0,0]
     self.store_list = []
     self.if_fail = False
+    self.first_start = True
     self.if_allcator = True
     self.first_in_alloc = True
+    self.TRAIL_NUM = 48
+    self.trail = self.TRAIL_NUM
 #### time
+    self.time_list = []
     self.start_t = 0
     self.end_t = 0
     self.timer_start = QTimer(self)
@@ -97,6 +101,7 @@ class MainWindow(QMainWindow):
       src_list = self.store_list
       print("store_list data:", self.store_list)
     self.start_t = time.time()
+    self.time_list.append(self.start_t)
     print("Start Time: ", self.start_t)
     self.set_src(self.my_id, src_list)
     self.mode = self.mode_dic['start']
@@ -174,7 +179,6 @@ class MainWindow(QMainWindow):
       self.start_view.src_1.setText(str(other_src))
       other_src = int(self.start_view.src_1.text())
 
-    #exec("self.start_view.%s.setText(\"%d\")" % (alloc_name, other_src) )
     self.QtStack.setCurrentIndex(0)
     if self.first_in_alloc == True:
       self.first_in_alloc = False
@@ -212,6 +216,7 @@ class MainWindow(QMainWindow):
   def set_alloc_re_view(self):
     self.timer_result.stop()
     print("########## In allocate result view")
+    print("### time_list = ", self.time_list)
     print(time.time())
     print("mode", self.mode)
     print("if allocator", self.if_allcator)
@@ -246,13 +251,17 @@ class MainWindow(QMainWindow):
       self.ConnectToServer(5)
       self.set_start_view()
     elif self.mode == self.mode_dic['start'] and ( key == QtCore.Qt.Key_2 or key == QtCore.Qt.Key_1):
+      self.time_list.append(time.time())
       self.mode = self.mode_dic['chosen']
       self.timer_fail.stop()
       if key == QtCore.Qt.Key_1:
         self.select_id = self.left_id
       elif key == QtCore.Qt.Key_2:
         self.select_id = self.right_id
-      self.ConnectToServer(self.select_id)
+      #FIXME send id and time list
+      self.time_list.append(self.select_id)
+      self.ConnectToServer(self.time_list)
+    ##  self.ConnectToServer(self.select_id)
       self.set_stop_view()
     elif self.mode == self.mode_dic['alloc'] and key == QtCore.Qt.Key_1:
       self.alloc_src(self.my_id, self.other_id, -1)
@@ -263,6 +272,7 @@ class MainWindow(QMainWindow):
     self.timer_fail.stop()
     #self.ConnectToServer(self.select_id)
     self.ConnectToServer(-1)
+    self.time_list.append(-1)
     print("########## In fail handler")
     self.if_fail = True
     self.mode = self.mode_dic['wait']
@@ -335,6 +345,46 @@ class MainWindow(QMainWindow):
     self.if_allcator = True
     self.if_fail = False
     self.mask_alloc()
+    if self.first_start:
+      self.first_start = False
+    else:
+    # TODO send msg
+      print("### time_list = ", self.time_list)
+      self.time_list = []
+
+    self.trail -= 1
+    print('**** trail' ,self.trail)
+
+    if self.trail == -1:
+      self.trail = self.TRAIL_NUM
+      self.trail_end()
+      self.set_timer(self.timer_start, 2)
+
+  def game_end(self):
+    self.stop_all_timer()
+    self.stop_view.label.setText("End")
+    self.QtStack.setCurrentIndex(1)
+
+  def trail_end(self):
+    self.stop_all_timer()
+    self.stop_view.label.setText("Shuffle")
+    self.QtStack.setCurrentIndex(1)
+    #TODO rec msg and set id
+
+ #   self.recv_data = self.sock.recv(1024).decode()
+ #   self.my_id = int(self.recv_data)
+ #   print("my id = ", self.my_id)
+ #   self.left_id, self.right_id = self.get_id(self.my_id)
+ #   self.set_id(self.my_id)
+
+  def stop_all_timer(self):
+    self.timer_result.stop()
+    self.timer_start.stop()
+    self.timer_group.stop()
+    self.timer_alloc.stop()
+    self.timer_stop.stop()
+    self.timer_fail.stop()
+    self.timer_wait.stop()
 
 #########
 
@@ -358,38 +408,13 @@ def main():
   TimeOut = 10
 
   with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-    #Host = socket.gethostbyname(socket.gethostname())
-    Host = "192.168.0.102"
+    Host = socket.gethostbyname(socket.gethostname())
+   # Host = "192.168.0.102"
     print("Host:",Host)
     sock.connect((Host, 10001))
     print("wait for server...")
-    #while True:
 
     app, window = ui_setup(sock)
-
-    #while True:
-    #  print("> ", end='', flush=True)
-    #  inputStart = time.time()
-    #  i, o, e = select.select( [sys.stdin], [], [], TimeOut )
-    #  if i:
-    #    inputEnd = time.time()
-    #    print("you spend ", inputEnd - inputStart, " second on input")
-    #    data = sys.stdin.readline().strip()
-    #    if data == "":
-    #      break
-
-    #    sock.send(data.encode())
-    #    print (sock.recv(1024).decode())
-    #    sock.send("finish one transit".encode())
-    #    print (sock.recv(1024).decode())
-    #  else:
-    #    print("\nYou miss one trail!")
-    #    data = "One client miss a trail!"
-    #    sock.send(data.encode())
-    #    print(sock.recv(1024).decode())
-    #    sock.send("all clients jump to the next trail".encode())
-    #    print(sock.recv(1024).decode())
-
     sock.close()
 
 if __name__ == "__main__":
