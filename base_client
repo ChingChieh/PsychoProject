@@ -376,11 +376,11 @@ class MainWindow(QMainWindow):
     self.QtStack.setCurrentIndex(1)
     #TODO rec msg and set id
 
- #   self.recv_data = self.sock.recv(1024).decode()
- #   self.my_id = int(self.recv_data)
- #   print("my id = ", self.my_id)
- #   self.left_id, self.right_id = self.get_id(self.my_id)
- #   self.set_id(self.my_id)
+    self.recv_data = self.sock.recv(1024).decode()
+    self.my_id = int(self.recv_data)
+    print("my id = ", self.my_id)
+    self.left_id, self.right_id = self.get_id(self.my_id)
+    self.set_id(self.my_id)
 
   def stop_all_timer(self):
     self.timer_result.stop()
