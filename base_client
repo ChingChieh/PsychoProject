@@ -366,6 +366,7 @@ class MainWindow(QMainWindow):
 
   def trail_end(self):
     # trail
+    print("########## In Trail End")
     self.trail = self.TRAIL_NUM
     self.RUN_NUM -= 1
     if self.RUN_NUM == 0:
@@ -378,7 +379,7 @@ class MainWindow(QMainWindow):
 
     self.recv_data = self.sock.recv(1024).decode()
     self.my_id = int(self.recv_data)
-    print("my id = ", self.my_id)
+    print("my new id = ", self.my_id)
     self.left_id, self.right_id = self.get_id(self.my_id)
     self.set_id(self.my_id)
 
