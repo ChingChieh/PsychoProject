@@ -168,7 +168,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             
             # 這裡有個小疑問是說傳 ID 的時候是傳 1-3 還是 1-6
             if (trail+1) % shuffle_num == 0:
-                self.request.send(bytes(str((self.thread_id - 1) % 3 + 1),"utf-8"))
+                self.request.send(bytes(str(getPassID(self.thread_id)),"utf-8"))
             
 
         self.request.close()
@@ -191,8 +191,11 @@ def getGroup(ID):
     group = int((ID_list.index(ID))) // 3 + 1
     return group
     
+def getPassID(ID):
+    print("thread:",ID)
+    print("new:", ID_list.index(ID) % 3 + 1)
+    return ID_list.index(ID) % 3 + 1
     
-
 def randTwoNumber(num1,num2):
     ran = random.randint(0,1)
     return num1 if ran else num2
