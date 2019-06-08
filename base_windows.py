@@ -10,6 +10,7 @@ import threading
 import json
 import pandas as pd
 import random
+from ast import literal_eval
 
 class MyRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
@@ -71,7 +72,8 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
 
     def handle(self):
-        global finishSelect_client, after_firstTrail, trail, clientSelection, trailFail, whoPick, sourceList, allocate, allocList
+        global finishSelect_client, after_firstTrail, trail, clientSelection, trailFail, 
+        global whoPick, sourceList, allocate, allocList, ID_list
         # print('connect from ', self.client_address)
         # cur_trd = threading.current_thread()
         print("Server request info:",self.request)
@@ -91,7 +93,9 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 #print("after client finish:", client_finish)
                 current_client.append(self.request)
                 finishSelect_client += 1
-                clientSelection[getGroup(self.thread_id) - 1][(int(self.thread_id) - 1) % 3] = int(self.data)
+                # data[0]:開始時間   data[1]:決策時間   data[2]:選了誰
+                self.data = literal_eval(self.data)
+                clientSelection[getGroup(self.thread_id) - 1][(int(self.thread_id) - 1) % 3] = int(self.data[2])
 
             if len(current_client) >= max_client_count:   # 傳送給每個client, 所有client選了誰
                 print("trailFail:",trailFail)
@@ -133,6 +137,11 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 after_firstTrail = 1
                 finishSelect_client = 0
                 allocate = 0
+                # 當每48次要重新對每個 client 分配ID
+                if (trail + 1) % 48 == 0:
+                    random.shuffle(ID_list)
+                    # self.request.send(bytes(str(ID_list),"utf-8"))
+
 
             while True:
                 if finishSelect_client == 0:
@@ -156,7 +165,11 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                         break
 
             self.request.send(bytes(str(allocList),"utf-8"))
-
+            
+            # 這裡有個小疑問是說傳 ID 的時候是傳 1-3 還是 1-6
+            if (trail+1) % 48 == 0:
+                self.request.send(bytes(str((self.thread_id - 1) % 3 + 1),"utf-8"))
+            
 
         self.request.close()
     def finish(self):
