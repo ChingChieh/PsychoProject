@@ -20,12 +20,12 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
         self.thread_id = int(threading.currentThread().getName().split("-")[1])
         self.data = None;
         self.request.send(bytes(str((self.thread_id - 1) % 3 + 1),"utf-8"))
-        
+
         lock.acquire()
         ID_list.append(self.thread_id)
         current_client.append(self.request)
         lock.release()
-        
+
         print('a user connect, IP:',self.client_address)
         print("This thread id",self.thread_id)
         if len(current_client) >= max_client_count: # only one client will enter this IF condition
@@ -65,7 +65,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             current_client.clear()
             allclient_press5 = 1
             # trail += 1
-            
+
         while True:
             if allclient_press5 == 1:
                 break
@@ -104,18 +104,18 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                         # clientSelection = [-1, -1, -1]
                         whoPick[i] = [-1,-1,-1]
                         trailFail[i] = 1
-               
+
                 for i in range(len(trailFail)):
                     if not trailFail[i]:
                         # 該決定誰要開始
-                        whoPick[i][0] = (clientSelection[i][clientSelection[i][0] - 1] == 1) * 1    
-                        whoPick[i][1] = (clientSelection[i][clientSelection[i][1] - 1] == 2) * 1    
-                        whoPick[i][2] = (clientSelection[i][clientSelection[i][2] - 1] == 3) * 1    
+                        whoPick[i][0] = (clientSelection[i][clientSelection[i][0] - 1] == 1) * 1
+                        whoPick[i][1] = (clientSelection[i][clientSelection[i][1] - 1] == 2) * 1
+                        whoPick[i][2] = (clientSelection[i][clientSelection[i][2] - 1] == 3) * 1
                         print(whoPick[i])
                         print("####",sourceList)
                         whoPick[i] = [a * b for a,b in zip(whoPick[i],sourceList)]
                         print(whoPick[i])
-                    
+
                         whoPickMax = max(whoPick[i])
                         if whoPick[i].count(whoPickMax) - 1:
                             minIndex = whoPick[i].index(min(whoPick[i]))
@@ -126,12 +126,12 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                             maxIndex = whoPick[i].index(whoPickMax)
                             whoPick[i][(maxIndex + 1) % 3] = 0
                             whoPick[i][(maxIndex + 2) % 3] = 0
-                            whoPick[i][whoPick[i].index(max(whoPick[i]))] = 1   
+                            whoPick[i][whoPick[i].index(max(whoPick[i]))] = 1
                             print(whoPick[i])
 
                 for index,s in enumerate(ID_CLIENT):
                     s.sendall((str(clientSelection[index // 3]) + ',' + str(whoPick[index // 3])).encode())
-                    
+
                 current_client.clear()
                 trail += 1
                 after_firstTrail = 1
@@ -159,7 +159,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             if whoPick[getGroup(self.thread_id) - 1][(int(self.thread_id) - 1) % 3]:
                 allocList = self.request.recv(1024).strip().decode()
                 allocate = 1
-            else: 
+            else:
                 while True:
                     if allocate == 1:
                         break
@@ -190,18 +190,24 @@ def getData():
 def getGroup(ID):
     group = int((ID_list.index(ID))) // 3 + 1
     return group
+<<<<<<< HEAD
     
 def getPassID(ID):
     print("thread:",ID)
     print("new:", ID_list.index(ID) % 3 + 1)
     return ID_list.index(ID) % 3 + 1
     
+=======
+
+
+
+>>>>>>> 5488a470fc0a203ad817e4e4d77b62da3204c845
 def randTwoNumber(num1,num2):
     ran = random.randint(0,1)
     return num1 if ran else num2
 
 def RepresentsInt(s):
-    try: 
+    try:
         int(s)
         return True
     except ValueError:
@@ -216,14 +222,14 @@ if __name__ == "__main__":
     ID_list = []
     ID_CLIENT = []
     current_client = []
-    
+
     # variable
     trail = 1
     trailFail = 0              # Initialize in setup method
     after_firstTrail = 0
     finishSelect_client = 0
     allclient_press5 = 0
-    max_client_count = 3       # This variable decide how many client can connect 
+    max_client_count = 3       # This variable decide how many client can connect
     clientSelection = []       # Initialize in setup method
     whoPick = [0] * 3          # Initialize in setup method
     allclient_connect = 0
@@ -244,7 +250,7 @@ if __name__ == "__main__":
         else:
             print("Input format is wrong, please try: python base_windows.py 6")
             print("Can change number after program to other number that is multiple of 3")
-            sys.exit() 
+            sys.exit()
     else:
         pass
 
