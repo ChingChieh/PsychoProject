@@ -190,18 +190,12 @@ def getData():
 def getGroup(ID):
     group = int((ID_list.index(ID))) // 3 + 1
     return group
-<<<<<<< HEAD
     
 def getPassID(ID):
     print("thread:",ID)
     print("new:", ID_list.index(ID) % 3 + 1)
     return ID_list.index(ID) % 3 + 1
     
-=======
-
-
-
->>>>>>> 5488a470fc0a203ad817e4e4d77b62da3204c845
 def randTwoNumber(num1,num2):
     ran = random.randint(0,1)
     return num1 if ran else num2
