@@ -370,11 +370,12 @@ class MainWindow(QMainWindow):
     self.trail = self.TRAIL_NUM -1
     self.RUN_NUM -= 1
     if self.RUN_NUM == 0:
-      game_end()
+      self.game_end()
      # exit()
     self.stop_all_timer()
     self.stop_view.label.setText("Shuffle")
     self.QtStack.setCurrentIndex(1)
+    print("########## In Shuffle")
     #TODO rec msg and set id
 
     self.recv_data = self.sock.recv(1024).decode()
