@@ -72,7 +72,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
 
     def handle(self):
-        global finishSelect_client, after_firstTrail, trail, clientSelection, trailFail, 
+        global finishSelect_client, after_firstTrail, trail, clientSelection, trailFail 
         global whoPick, sourceList, allocate, allocList, ID_list
         # print('connect from ', self.client_address)
         # cur_trd = threading.current_thread()
@@ -138,7 +138,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 finishSelect_client = 0
                 allocate = 0
                 # 當每48次要重新對每個 client 分配ID
-                if (trail + 1) % 48 == 0:
+                if (trail + 1) % shuffle_num == 0:
                     random.shuffle(ID_list)
                     # self.request.send(bytes(str(ID_list),"utf-8"))
 
@@ -167,7 +167,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             self.request.send(bytes(str(allocList),"utf-8"))
             
             # 這裡有個小疑問是說傳 ID 的時候是傳 1-3 還是 1-6
-            if (trail+1) % 48 == 0:
+            if (trail+1) % shuffle_num == 0:
                 self.request.send(bytes(str((self.thread_id - 1) % 3 + 1),"utf-8"))
             
 
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     allclient_connect = 0
     allocate = 0
     connected_client = 0
-
+    shuffle_num = 48
 
     df = getData();
     print(df.head());
