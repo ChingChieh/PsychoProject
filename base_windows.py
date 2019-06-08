@@ -80,6 +80,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
         while True:
             if after_firstTrail:
                 sourceList = list(df.loc[trail, ['PlayerA', 'PlayerB','PlayerC']])
+                print("Source:",sourceList)
                 self.request.send(bytes(str(sourceList),"utf-8"))
 
 
@@ -138,7 +139,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 finishSelect_client = 0
                 allocate = 0
                 # 當每48次要重新對每個 client 分配ID
-                if (trail) % shuffle_num == 0:
+                if (trail - 1) % shuffle_num == 0:
                     print("HEY! We need shuffle!!!")
                     random.shuffle(ID_list)
                     # self.request.send(bytes(str(ID_list),"utf-8"))
@@ -155,6 +156,10 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
                 print("time elapse: ", b - a)
                 trailFail[getGroup(self.thread_id) - 1] = 0
                 clientSelection[getGroup(self.thread_id) - 1] = [0] * 3
+                # 這裡有個小疑問是說傳 ID 的時候是傳 1-3 還是 1-6
+                if (trail - 1) % shuffle_num == 0:
+                    print("HEY! Send ID:", getPassID(self.thread_id))
+                    self.request.send(bytes(str(getPassID(self.thread_id)),"utf-8"))
                 continue
 
             if whoPick[getGroup(self.thread_id) - 1][(int(self.thread_id) - 1) % 3]:
@@ -167,11 +172,12 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 
             
             # 這裡有個小疑問是說傳 ID 的時候是傳 1-3 還是 1-6
-            if (trail) % shuffle_num == 0:
-                print("HEY!")
+            if (trail - 1) % shuffle_num == 0:
+                print("HEY! Send ID:", getPassID(self.thread_id))
                 self.request.send(bytes(str(getPassID(self.thread_id)),"utf-8"))
             
             self.request.send(bytes(str(allocList),"utf-8"))
+            print("allocList:", allocList)
 
         self.request.close()
     def finish(self):
