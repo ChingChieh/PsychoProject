@@ -174,7 +174,7 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
             # 這裡有個小疑問是說傳 ID 的時候是傳 1-3 還是 1-6
             if (trail - 1) % shuffle_num == 0:
                 print("HEY! Send ID:", getPassID(self.thread_id))
-                self.request.send(bytes(str(getPassID(self.thread_id)),"utf-8"))
+                self.request.send(bytes(str(getPassID(self.thread_id)) + ',',"utf-8"))
             
             self.request.send(bytes(str(allocList),"utf-8"))
             print("allocList:", allocList)
