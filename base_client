@@ -353,6 +353,7 @@ class MainWindow(QMainWindow):
       self.time_list = []
 
     self.trail -= 1
+    print('**** RUN_NUM' ,self.RUN_NUM)
     print('**** trail' ,self.trail)
 
     if self.trail == -1:
@@ -360,9 +361,13 @@ class MainWindow(QMainWindow):
       self.set_timer(self.timer_start, 2)
 
   def game_end(self):
+    print("########## Game End ##########")
     self.stop_all_timer()
     self.stop_view.label.setText("End")
     self.QtStack.setCurrentIndex(1)
+    end = 100000
+    while end:
+      end -= 1
 
   def trail_end(self):
     # trail
@@ -372,7 +377,7 @@ class MainWindow(QMainWindow):
     self.RUN_NUM -= 1
     if self.RUN_NUM == 0:
       self.game_end()
-     # exit()
+      exit()
     self.stop_all_timer()
     self.stop_view.label.setText("Shuffle")
     self.QtStack.setCurrentIndex(1)
