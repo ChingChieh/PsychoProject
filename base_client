@@ -16,7 +16,7 @@ import sys
 class MainWindow(QMainWindow):
   def __init__(self, sock, parent=None):
     super(MainWindow, self).__init__(parent)
-    self.mode_dic = {'init': 1, 'start':2, 'stop':3, 'alloc':4, 'wait':5, 'chosen':6, 'fail':7, 'group':8, 'recd':9}
+    self.mode_dic = {'init': 1, 'start':2, 'stop':3, 'alloc':4, 'wait':5, 'chosen':6, 'fail':7, 'group':8, 'recd':9, 'trail_end':10}
     self.mode = 1
     self.my_id = 0
     self.other_id = 0
@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
     print("########## In start view")
     self.restart_init()
     self.timer_start.stop()
-    if self.mode != self.mode_dic['init'] and self.mode != self.mode_dic['recd']:
+    if self.mode != self.mode_dic['init'] and self.mode != self.mode_dic['recd'] and self.mode != self.mode_dic['trail_end']:
       self.recv_data = self.sock.recv(1024).decode()
       print("receive data:", self.recv_data)
     src_list = str_to_list(self.recv_data)
@@ -367,6 +367,7 @@ class MainWindow(QMainWindow):
   def trail_end(self):
     # trail
     print("########## In Trail End")
+    self.mode = self.mode_dic['trail_end']
     self.trail = self.TRAIL_NUM -1
     self.RUN_NUM -= 1
     if self.RUN_NUM == 0:
@@ -378,8 +379,11 @@ class MainWindow(QMainWindow):
     print("########## In Shuffle")
     #TODO rec msg and set id
 
+    new_id = self.sock.recv(1024).decode()
+    print("************** self.recv_data = ", new_id)
     self.recv_data = self.sock.recv(1024).decode()
-    self.my_id = int(self.recv_data)
+    print("************** self.recv_data = ", self.recv_data)
+    self.my_id = int(new_id)
     print("my new id = ", self.my_id)
     self.left_id, self.right_id = self.get_id(self.my_id)
     self.set_id(self.my_id)
@@ -404,7 +408,7 @@ def ui_setup(sock):
 
 def str_to_list(str_data):
   try:
-    print("str_to_list:",str_data)
+    print("str_to_list:", str_data)
     return literal_eval(str_data)
   except Exception as e:
      print(e)
@@ -416,7 +420,7 @@ def main():
 
   with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     Host = socket.gethostbyname(socket.gethostname())
-   # Host = "192.168.0.102"
+    #Host = "192.168.1.117"
     print("Host:",Host)
     sock.connect((Host, 10001))
     print("wait for server...")
